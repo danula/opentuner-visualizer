@@ -25,7 +25,7 @@ def get_data():
 
     grouped = data.groupby('was_new_best')
 
-    colors = ["blue" if (val == 0) else "red" for val in data['was_new_best'].values]
+    colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
 
     return data, grouped.get_group(1), colors
 
@@ -92,12 +92,12 @@ while True:
     data, best_data, colors = get_data()
     source.data['x'] = data['result_id']
     source.data['y'] = data['time']
-    source.data['configuration_id'] = data['configuration_id']
+    source.data['conf_id'] = data['configuration_id']
     source.data['fill_color'] = colors
 
     source_best.data['x'] = best_data['result_id']
     source_best.data['y'] = best_data['time']
-    source_best.data['configuration_id'] = best_data['configuration_id']
+    source_best.data['conf'] = best_data['configuration_id']
 
     cursession().store_objects(source)
     time.sleep(.50)
