@@ -97,7 +97,7 @@ while True:
 
     source_best.data['x'] = best_data['result_id']
     source_best.data['y'] = best_data['time']
-    source_best.data['conf'] = best_data['configuration_id']
+    source_best.data['conf_id'] = best_data['configuration_id']
 
     cursession().store_objects(source)
     time.sleep(.50)
