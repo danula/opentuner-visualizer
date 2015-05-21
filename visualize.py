@@ -1,5 +1,6 @@
 import constants
 
+import pickle
 import time
 import pandas as pd
 import sqlite3 as lite
@@ -14,6 +15,18 @@ from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback
 con = lite.connect(constants.database_url)
 cur = con.cursor()
 
+
+def get_configs():
+    cur.execute("SELECT id, data FROM configuration")
+    rows = cur.fetchall()
+    configs = dict()
+    for row in rows:
+        try:
+            a = pickle.loads(row[1])
+            configs[row[0]] = a
+        except:
+            pass
+    return configs
 
 def get_data():
     cur.execute("SELECT result_id, generation, desired_result.configuration_id, time,requestor,was_new_best "
