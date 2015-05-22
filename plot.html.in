@@ -1,9 +1,8 @@
 <html>
 <body>
 <script>
-	function callfunction(element){
-		console.log(element);		
-		alert("FAQ!");
+	function update_conf_details(obj) {
+        document.getElementById('conf_details').innerHTML = JSON.stringify(obj);
 	}
 </script>
 

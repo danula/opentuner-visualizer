@@ -83,11 +83,9 @@ callback = Callback(args=dict(source=source), code="""
     var arr = cb_obj.get('selected')['1d'].indices;
     if(arr.length > 0) {
         var d = cb_obj.get('data')['conf_data'][arr[0]];
+        update_conf_details(d);
         console.log(d);
-        document.getElementById('conf_details').innerHTML = JSON.stringify(d);
     }
-    console.log(cb_obj.get('selected')['1d'].indices);
-    /*callfunction(this);*/
 """)
 
 taptool = p.select(dict(type=TapTool))
