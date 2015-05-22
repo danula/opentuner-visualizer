@@ -9,6 +9,7 @@
     .data_table > tbody{
         overflow-y: scroll;
         height: 500px;
+        width: 100%;
         position: absolute;
     }
 </style>

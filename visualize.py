@@ -51,7 +51,6 @@ def get_data():
 
 data, best_data, colors = get_data()
 
-print(data)
 source = ColumnDataSource(data=dict(
     x=data['result_id'],
     y=data['time'],
@@ -76,8 +75,8 @@ p = figure(
     x_axis_label='Result id', y_axis_label='time'
 )
 
-p.circle('x', 'y', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=3)
-p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=3)
+p.circle('x', 'y', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
+p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=5)
 
 callback = Callback(args=dict(source=source), code="""
     var arr = cb_obj.get('selected')['1d'].indices;
@@ -115,11 +114,14 @@ while True:
     source.data['x'] = data['result_id']
     source.data['y'] = data['time']
     source.data['conf_id'] = data['conf_id']
+    source.data['conf_data'] = data['conf_data']
     source.data['fill_color'] = colors
 
     source_best.data['x'] = best_data['result_id']
     source_best.data['y'] = best_data['time']
     source_best.data['conf_id'] = best_data['conf_id']
+    source_best.data['conf_data'] = best_data['conf_data']
 
     cursession().store_objects(source)
+    cursession().store_objects(source_best)
     time.sleep(.50)
