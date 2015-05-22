@@ -2,6 +2,7 @@ import constants
 
 import pickle
 import time
+import zlib
 import pandas as pd
 import sqlite3 as lite
 import webbrowser
@@ -16,25 +17,30 @@ con = lite.connect(constants.database_url)
 cur = con.cursor()
 
 
-def get_configs():
-    cur.execute("SELECT id, data FROM configuration")
-    rows = cur.fetchall()
-    configs = dict()
-    for row in rows:
-        try:
-            a = pickle.loads(row[1])
-            configs[row[0]] = a
-        except:
-            pass
-    return configs
+def unpickle_data(data):
+    try:
+        data = zlib.decompress(data)
+    except:
+        pass
+    return pickle.loads(data)
+
 
 def get_data():
-    cur.execute("SELECT result_id, generation, desired_result.configuration_id, time,requestor,was_new_best "
-                + "FROM desired_result INNER JOIN result ON desired_result.result_id = result.id WHERE result.state='OK'")
+    cur.execute(
+        "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
+        " configuration.data as conf_data "
+        + " FROM result "
+        + " JOIN desired_result ON desired_result.result_id = result.id  "
+        + " JOIN configuration ON configuration.id =  result.configuration_id  "
+        + " WHERE result.state='OK' "
+    )
     rows = cur.fetchall()
 
-    cols = ["result_id", "generation", "configuration_id", "time", "requestor", "was_new_best"]
-    data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "configuration_id"]]
+    cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "conf_data"]
+    data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "conf_id", "conf_data"]]
+
+    for i, val in enumerate(data['conf_data']):
+        data['conf_data'][i] = unpickle_data(val)
 
     grouped = data.groupby('was_new_best')
 
@@ -45,17 +51,20 @@ def get_data():
 
 data, best_data, colors = get_data()
 
+print(data)
 source = ColumnDataSource(data=dict(
     x=data['result_id'],
     y=data['time'],
-    conf_id=data['configuration_id'],
+    conf_id=data['conf_id'],
+    conf_data=data['conf_data'],
     fill_color=colors
 ))
 
 source_best = ColumnDataSource(data=dict(
     x=best_data['result_id'],
     y=best_data['time'],
-    conf_id=best_data['configuration_id']
+    conf_id=best_data['conf_id'],
+    conf_data=data['conf_data']
 ))
 
 TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap"
@@ -73,7 +82,9 @@ p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=3
 callback = Callback(args=dict(source=source), code="""
     var arr = cb_obj.get('selected')['1d'].indices;
     if(arr.length > 0) {
-        console.log(cb_obj.get('data')['x'][arr[0]]);
+        var d = cb_obj.get('data')['conf_data'][arr[0]];
+        console.log(d);
+        document.getElementById('conf_details').innerHTML = JSON.stringify(d);
     }
     console.log(cb_obj.get('selected')['1d'].indices);
     /*callfunction(this);*/
@@ -105,12 +116,12 @@ while True:
     data, best_data, colors = get_data()
     source.data['x'] = data['result_id']
     source.data['y'] = data['time']
-    source.data['conf_id'] = data['configuration_id']
+    source.data['conf_id'] = data['conf_id']
     source.data['fill_color'] = colors
 
     source_best.data['x'] = best_data['result_id']
     source_best.data['y'] = best_data['time']
-    source_best.data['conf_id'] = best_data['configuration_id']
+    source_best.data['conf_id'] = best_data['conf_id']
 
     cursession().store_objects(source)
     time.sleep(.50)

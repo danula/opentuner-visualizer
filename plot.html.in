@@ -7,7 +7,19 @@
 	}
 </script>
 
-$script_js$
+<table>
+    <tr>
+        <td>
+        $script_js$
+        </td>
+        <td>
+            <h3>
+                <div id="conf_details"></div>
+            </h3>
+        </td>
+    </tr>
+</table>
+
 
 </body>
 </html>
