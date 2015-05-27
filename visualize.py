@@ -82,8 +82,14 @@ callback = Callback(args=dict(source=source), code="""
     var arr = cb_obj.get('selected')['1d'].indices;
     if(arr.length > 0) {
         var d = cb_obj.get('data')['conf_data'][arr[0]];
-        update_conf_details(d);
-        console.log(d);
+        var data = [];
+        for(var key in d) {
+            data.push({
+                "name": key,
+                "value": d[key]
+            });
+        }
+        update_conf_details(data);
     }
 """)
 

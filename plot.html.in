@@ -1,39 +1,37 @@
 <html>
-<body>
-
-<style>
-
-    .data_table{
-        height:500px;
-    }
-    .data_table > tbody{
-        overflow-y: scroll;
-        height: 500px;
-        width: 100%;
-        position: absolute;
-    }
-</style>
-<script>
-	function update_conf_details(obj) {
-        var html = "<table class='table table-striped data_table'><thead><th>Name</th><th>Value</th><tbody>";
-        for (var k in obj) {
-            html = html + "<tr><td>"+ k + "</td><td>" + obj[k] + "</td></tr>";
+<head>
+    <link rel="stylesheet" href="bootstrap.min.css"/>
+    <link rel="stylesheet" href="dynatable/jquery.dynatable.css"/>
+    <script src="jquery.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="dynatable/jquery.dynatable.js"></script>
+    <script>
+        function update_conf_details(obj) {
+            config_table.settings.dataset.originalRecords = obj;
+            config_table.process();
         }
-        html = html + "</tbody></table>";
-        document.getElementById('conf_details').innerHTML = html;
-	}
-</script>
-<link rel="stylesheet" href="bootstrap.min.css"/>
-<script src="jquery.min.js"></script>
-<script src="bootstrap.min.js"></script>
+        var config_table;
+        $(document).ready(function () {
+            config_table = $('#configuration-table').dynatable().data('dynatable');
+        });
+    </script>
+</head>
+<body>
 
 <div class="row">
     <div class="col-md-6">
-    $script_js$
+        $script_js$
     </div>
     <div class="col-md-6">
         <h3>Configuration Details</h3>
-        <div id="conf_details"></div>
+        <table id="configuration-table">
+            <thead>
+            <th>Name</th>
+            <th>Value</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 </div>
 
