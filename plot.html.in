@@ -1,10 +1,10 @@
 <html>
 <head>
     <link rel="stylesheet" href="bootstrap.min.css"/>
-    <link rel="stylesheet" href="dynatable/jquery.dynatable.css"/>
     <script src="jquery.min.js"></script>
     <script src="bootstrap.min.js"></script>
     <script src="dynatable/jquery.dynatable.js"></script>
+    <link rel="stylesheet" href="dynatable/jquery.dynatable.css"/>
     <script>
         function update_conf_details(obj) {
             config_table.settings.dataset.originalRecords = obj;
@@ -24,7 +24,7 @@
     </div>
     <div class="col-md-6">
         <h3>Configuration Details</h3>
-        <table id="configuration-table">
+        <table id="configuration-table" class="table table-bordered">
             <thead>
             <th>Name</th>
             <th>Value</th>
