@@ -1,10 +1,10 @@
 <html>
 <head>
-    <link rel="stylesheet" href="bootstrap.min.css"/>
-    <script src="jquery.min.js"></script>
-    <script src="bootstrap.min.js"></script>
-    <script src="dynatable/jquery.dynatable.js"></script>
-    <link rel="stylesheet" href="dynatable/jquery.dynatable.css"/>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.dynatable.js"></script>
+    <link rel="stylesheet" href="css/jquery.dynatable.css"/>
     <script>
         function update_conf_details(obj) {
             config_table.settings.dataset.originalRecords = obj;
