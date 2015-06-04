@@ -2,16 +2,15 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 import constants
+import json
 
 import pickle
-import time
 import zlib
 import pandas as pd
 import sqlite3 as lite
-import webbrowser
-from os import path
-from collections import OrderedDict
 
+from collections import OrderedDict
+from django.http import HttpResponse
 from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
@@ -51,8 +50,10 @@ def get_data():
 
     return data, grouped.get_group(1), colors
 
+
 p, source, source_best = None, None, None
 initialized = False
+
 
 def initialize_plot():
     global p, source, source_best, initialized
@@ -106,6 +107,7 @@ def initialize_plot():
     ])
     show(p)
 
+
 def update_plot():
     global p, source, source_best
     data, best_data, colors = get_data()
@@ -123,9 +125,11 @@ def update_plot():
     cursession().store_objects(source)
     cursession().store_objects(source_best)
 
+
 def get_plot_html():
     global p
     return autoload_server(p, cursession())
+
 
 def index(request):
     global initialized
@@ -133,5 +137,22 @@ def index(request):
         initialize_plot()
     return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html())})
 
+
 def update(request):
     update_plot()
+
+
+def config(request, point_id):
+    cur.execute(
+        "SELECT configuration.data as conf_data "
+        + " FROM result "
+        + " JOIN desired_result ON desired_result.result_id = result.id  "
+        + " JOIN configuration ON configuration.id =  result.configuration_id  "
+        + " WHERE result.state='OK' AND result.id = '%s'" % point_id
+    )
+    configurations = cur.fetchone()[0]
+
+    response_data = unpickle_data(configurations)
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
