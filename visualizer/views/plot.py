@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
@@ -15,9 +16,6 @@ from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
 
-con = lite.connect(constants.database_url)
-cur = con.cursor()
-
 
 def unpickle_data(data):
     try:
@@ -28,15 +26,18 @@ def unpickle_data(data):
 
 
 def get_data():
-    cur.execute(
-        "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
-        " configuration.data as conf_data "
-        + " FROM result "
-        + " JOIN desired_result ON desired_result.result_id = result.id  "
-        + " JOIN configuration ON configuration.id =  result.configuration_id  "
-        + " WHERE result.state='OK' "
-    )
-    rows = cur.fetchall()
+
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
+            " configuration.data as conf_data "
+            + " FROM result "
+            + " JOIN desired_result ON desired_result.result_id = result.id  "
+            + " JOIN configuration ON configuration.id =  result.configuration_id  "
+            + " WHERE result.state='OK' "
+        )
+        rows = cur.fetchall()
 
     cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "conf_data"]
     data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "conf_id", "conf_data"]]
@@ -50,13 +51,11 @@ def get_data():
 
     return data, grouped.get_group(1), colors
 
-
-p, source, source_best = None, None, None
 initialized = False
 
 
 def initialize_plot():
-    global p, source, source_best, initialized
+    global p, source, source_best, initialized, cur_session
     initialized = True
     data, best_data, colors = get_data()
 
@@ -106,6 +105,7 @@ def initialize_plot():
         ("Time", "@y")
     ])
     show(p)
+    cur_session = cursession()
 
 
 def update_plot():
@@ -122,8 +122,8 @@ def update_plot():
     source_best.data['conf_id'] = best_data['conf_id']
     source_best.data['conf_data'] = best_data['conf_data']
 
-    cursession().store_objects(source)
-    cursession().store_objects(source_best)
+    cur_session.store_objects(source)
+    cur_session.store_objects(source_best)
 
 
 def get_plot_html():
@@ -140,17 +140,19 @@ def index(request):
 
 def update(request):
     update_plot()
-
+    return HttpResponse("success")
 
 def config(request, point_id):
-    cur.execute(
-        "SELECT configuration.data as conf_data "
-        + " FROM result "
-        + " JOIN desired_result ON desired_result.result_id = result.id  "
-        + " JOIN configuration ON configuration.id =  result.configuration_id  "
-        + " WHERE result.state='OK' AND result.id = '%s'" % point_id
-    )
-    configurations = cur.fetchone()[0]
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT configuration.data as conf_data "
+            + " FROM result "
+            + " JOIN desired_result ON desired_result.result_id = result.id  "
+            + " JOIN configuration ON configuration.id =  result.configuration_id  "
+            + " WHERE result.state='OK' AND result.id = '%s'" % point_id
+        )
+        configurations = cur.fetchone()[0]
 
     response_data = unpickle_data(configurations)
 

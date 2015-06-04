@@ -12,4 +12,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^plot/', views.plot.index, name='plot'),
     url(r'^plot_update/', views.plot.update, name='plot_update'),
+    url(r'^plot/(?P<point_id>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)', views.plot.config, name='detail')
 )
