@@ -52,11 +52,11 @@ def get_data():
 
     return data, grouped.get_group(1), colors
 
-p, source, source_best = None, None, None
+
 initialized = False
 
 def initialize_plot():
-    global p, source, source_best, initialized
+    global p, source, source_best, initialized, cur_session
     initialized = True
     data, best_data, colors = get_data()
 
@@ -106,6 +106,7 @@ def initialize_plot():
         ("Time", "@y")
     ])
     show(p)
+    cur_session = cursession()
 
 def update_plot():
     global p, source, source_best
@@ -121,8 +122,8 @@ def update_plot():
     source_best.data['conf_id'] = best_data['conf_id']
     source_best.data['conf_data'] = best_data['conf_data']
 
-    cursession().store_objects(source)
-    cursession().store_objects(source_best)
+    cur_session.store_objects(source)
+    cur_session.store_objects(source_best)
 
 def get_plot_html():
     global p
