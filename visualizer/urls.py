@@ -11,4 +11,5 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^plot/', views.plot.index, name='plot'),
+    url(r'^plot_update/', views.plot.update, name='plot_update'),
 )

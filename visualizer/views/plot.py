@@ -87,13 +87,9 @@ def initialize_plot():
     callback = Callback(args=dict(source=source), code="""
         var arr = cb_obj.get('selected')['1d'].indices;
         if(arr.length > 0) {
-            var d = cb_obj.get('data')['conf_data'][arr[0]];
             var data = [];
-            for(var key in d) {
-                data.push({
-                    "name": key,
-                    "value": d[key]
-                });
+            for(var i = 0; i<arr.length; ++i) {
+                data.push(cb_obj.get('data')['x'][arr[i]]);
             }
             update_conf_details(data);
         }
@@ -126,7 +122,6 @@ def update_plot():
 
     cursession().store_objects(source)
     cursession().store_objects(source_best)
-    time.sleep(.50)
 
 def get_plot_html():
     global p
@@ -137,3 +132,6 @@ def index(request):
     if not initialized:
         initialize_plot()
     return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html())})
+
+def update(request):
+    update_plot()
