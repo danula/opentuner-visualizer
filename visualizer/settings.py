@@ -51,6 +51,7 @@ ROOT_URLCONF = 'visualizer.urls'
 
 WSGI_APPLICATION = 'visualizer.wsgi.application'
 
+DIRECTORY_NAME = os.path.dirname(os.path.realpath(__file__))
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -75,7 +76,19 @@ USE_L10N = True
 
 USE_TZ = True
 
+# List of callables that know how to import templates from various sources.
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+#     'django.template.loaders.eggs.Loader',
+)
 
+TEMPLATE_DIRS = (
+    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+    DIRECTORY_NAME + '/templates',
+)
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
