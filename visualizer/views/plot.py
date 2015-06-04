@@ -9,6 +9,7 @@ import pickle
 import zlib
 import pandas as pd
 import sqlite3 as lite
+import time
 
 from collections import OrderedDict
 from django.http import HttpResponse
@@ -40,10 +41,7 @@ def get_data():
         rows = cur.fetchall()
 
     cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "conf_data"]
-    data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "conf_id", "conf_data"]]
-
-    for i, val in enumerate(data['conf_data']):
-        data['conf_data'][i] = unpickle_data(val)
+    data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "conf_id"]]
 
     grouped = data.groupby('was_new_best')
 
@@ -63,15 +61,13 @@ def initialize_plot():
         x=data['result_id'],
         y=data['time'],
         conf_id=data['conf_id'],
-        conf_data=data['conf_data'],
         fill_color=colors
     ))
 
     source_best = ColumnDataSource(data=dict(
         x=best_data['result_id'],
         y=best_data['time'],
-        conf_id=best_data['conf_id'],
-        conf_data=data['conf_data']
+        conf_id=best_data['conf_id']
     ))
 
     TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap"
@@ -114,13 +110,11 @@ def update_plot():
     source.data['x'] = data['result_id']
     source.data['y'] = data['time']
     source.data['conf_id'] = data['conf_id']
-    source.data['conf_data'] = data['conf_data']
     source.data['fill_color'] = colors
 
     source_best.data['x'] = best_data['result_id']
     source_best.data['y'] = best_data['time']
     source_best.data['conf_id'] = best_data['conf_id']
-    source_best.data['conf_data'] = best_data['conf_data']
 
     cur_session.store_objects(source)
     cur_session.store_objects(source_best)
@@ -148,13 +142,11 @@ def config(request, point_id):
         cur.execute(
             "SELECT configuration.data as conf_data "
             + " FROM result "
-            + " JOIN desired_result ON desired_result.result_id = result.id  "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
             + " WHERE result.state='OK' AND result.id = '%s'" % point_id
         )
         configurations = cur.fetchone()[0]
 
     response_data = unpickle_data(configurations)
-
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 

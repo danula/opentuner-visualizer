@@ -10,7 +10,9 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', views.plot.index, name='plot'),
+    url(r'^plot/$', views.plot.index, name='plot'),
     url(r'^plot/index/', views.plot.index, name='plot'),
     url(r'^plot/update/', views.plot.update, name='plot_update'),
-    url(r'^plot/config/(?P<point_id>[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?)', views.plot.config, name='detail')
+    url(r'^plot/config/(?P<point_id>[0-9]+)', views.plot.config, name='detail')
 )
