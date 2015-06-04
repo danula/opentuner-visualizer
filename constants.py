@@ -1,1 +1,1 @@
-database_url = "/home/isuru/projects/opentuner/examples/gccflags/opentuner.db/isuru.db"
+database_url = "/home/kasun/projects/opentuner/examples/gccflags/opentuner.db/kasun-Satellite-L755.db"
