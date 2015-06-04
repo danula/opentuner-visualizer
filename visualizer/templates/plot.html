@@ -14,6 +14,13 @@
         $(document).ready(function () {
             config_table = $('#configuration-table').dynatable().data('dynatable');
         });
+        setInterval(function(){
+            $.ajax({
+                type: "GET",
+                url: '/plot_update/'
+            });
+        },2000)
+
     </script>
 </head>
 <body>
