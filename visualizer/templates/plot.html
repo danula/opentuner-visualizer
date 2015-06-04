@@ -7,8 +7,22 @@
     <link rel="stylesheet" href="/static/css/jquery.dynatable.css"/>
     <script>
         function update_conf_details(obj) {
-            config_table.settings.dataset.originalRecords = obj;
-            config_table.process();
+            $.ajax({
+                type: "GET",
+                url: '/plot/config/' + obj[0],
+                success: function(response){
+                    console.log(response)
+                    var data = [];
+                    for(var key in response) {
+                        data.push({
+                            "name": key,
+                            "value": response[key]
+                        });
+                    }
+                    config_table.settings.dataset.originalRecords = data;
+                    config_table.process();
+                }
+            });
         }
         var config_table;
         $(document).ready(function () {
@@ -17,9 +31,9 @@
         setInterval(function(){
             $.ajax({
                 type: "GET",
-                url: '/plot_update/'
+                url: '/plot/update/'
             });
-        },2000)
+        },5000)
 
     </script>
 </head>
