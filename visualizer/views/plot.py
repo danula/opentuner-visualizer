@@ -154,9 +154,26 @@ def config(request, points_id):
 
         for key in data[0][0]:
             record = {'name': key}
+            equal = True
+            value = data[0][0][key]
             for i in range(len(data)):
                 record[str(data[i][1])] = data[i][0][key]
+                if value == 'default':
+                    value = data[i][0][key]
+                if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                    equal = False
+                record['equal'] = equal
             table_data.append(record)
+
+        def cmp_items(a, b):
+            if a['equal'] :
+                if b['equal'] :
+                    return -1 if a['name'] < b['name'] else 1
+                return -1
+            if b['equal']:
+                return 1
+            return -1 if a['name'] < b['name'] else 1
+        table_data.sort(cmp_items)
 
         response_data = {'data': table_data, 'columns': ['Name'] + [str(data[i][1]) for i in range(len(rows))]}
 
