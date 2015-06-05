@@ -136,17 +136,29 @@ def update(request):
     update_plot()
     return HttpResponse("success")
 
-def config(request, point_id):
+
+def config(request, points_id):
+    print(points_id)
     with lite.connect(constants.database_url) as con:
         cur = con.cursor()
         cur.execute(
-            "SELECT configuration.data as conf_data "
+            "SELECT configuration.data as conf_data, result.id"
             + " FROM result "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
-            + " WHERE result.state='OK' AND result.id = '%s'" % point_id
+            + " WHERE result.state='OK' AND result.id in (%s)" % points_id
         )
-        configurations = cur.fetchone()[0]
+        rows = cur.fetchall()
+        data = [(unpickle_data(d[0]), d[1]) for d in rows]
 
-    response_data = unpickle_data(configurations)
+        table_data = []
+
+        for key in data[0][0]:
+            record = {'name': key}
+            for i in range(len(data)):
+                record[str(data[i][1])] = data[i][0][key]
+            table_data.append(record)
+
+        response_data = {'data': table_data, 'columns': ['Name'] + [str(data[i][1]) for i in range(len(rows))]}
+
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
