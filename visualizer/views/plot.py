@@ -9,12 +9,13 @@ import pickle
 import zlib
 import pandas as pd
 import sqlite3 as lite
+import time
 
 from collections import OrderedDict
 from django.http import HttpResponse
 from bokeh.plotting import *
-from bokeh.models import HoverTool, TapTool, BoxSelectTool, LassoSelectTool, \
-    OpenURL, ColumnDataSource, Callback, GlyphRenderer
+from bokeh.embed import autoload_server
+from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
 
 
 def unpickle_data(data):
@@ -26,6 +27,7 @@ def unpickle_data(data):
 
 
 def get_data():
+
     with lite.connect(constants.database_url) as con:
         cur = con.cursor()
         cur.execute(
@@ -47,41 +49,32 @@ def get_data():
 
     return data, grouped.get_group(1), colors
 
-
 initialized = False
-plot_id = 'opentuner2'
+
 
 def initialize_plot():
-    global initialized
+    global p, source, source_best, initialized, cur_session
     initialized = True
     data, best_data, colors = get_data()
 
-    source = ColumnDataSource(
-        data=dict(
-            x=data['result_id'],
-            y=data['time'],
-            conf_id=data['conf_id'],
-            fill_color=colors
-        ),
-        id=plot_id + 'source'
-    )
+    source = ColumnDataSource(data=dict(
+        x=data['result_id'],
+        y=data['time'],
+        conf_id=data['conf_id'],
+        fill_color=colors
+    ))
 
-    source_best = ColumnDataSource(
-        data=dict(
-            x=best_data['result_id'],
-            y=best_data['time'],
-            conf_id=best_data['conf_id']
-        ),
-        id=plot_id + 'source_best'
-    )
+    source_best = ColumnDataSource(data=dict(
+        x=best_data['result_id'],
+        y=best_data['time'],
+        conf_id=best_data['conf_id']
+    ))
 
-    TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap,box_select,lasso_select," \
-            "poly_select"
-    output_server(plot_id)
+    TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap"
+    output_server("opentuner2")
     p = figure(
         tools=TOOLS, title="OpenTuner",
-        x_axis_label='Result id', y_axis_label='time',
-        id=plot_id + 'figure'
+        x_axis_label='Result id', y_axis_label='time'
     )
 
     p.circle('x', 'y', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
@@ -98,7 +91,8 @@ def initialize_plot():
         }
     """)
 
-    source.callback = callback
+    taptool = p.select(dict(type=TapTool))
+    taptool.action = callback
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = OrderedDict([
@@ -107,52 +101,29 @@ def initialize_plot():
         ("Time", "@y")
     ])
     show(p)
+    cur_session = cursession()
 
 
 def update_plot():
-    output_server(plot_id)
+    global p, source, source_best
     data, best_data, colors = get_data()
+    source.data['x'] = data['result_id']
+    source.data['y'] = data['time']
+    source.data['conf_id'] = data['conf_id']
+    source.data['fill_color'] = colors
 
-    source = ColumnDataSource(
-        data=dict(
-            x=data['result_id'],
-            y=data['time'],
-            conf_id=data['conf_id'],
-            fill_color=colors
-        ),
-        id=plot_id + 'source'
-    )
+    source_best.data['x'] = best_data['result_id']
+    source_best.data['y'] = best_data['time']
+    source_best.data['conf_id'] = best_data['conf_id']
 
-    source_best = ColumnDataSource(
-        data=dict(
-            x=best_data['result_id'],
-            y=best_data['time'],
-            conf_id=best_data['conf_id']
-        ),
-        id=plot_id + 'source_best'
-    )
+    cur_session.store_objects(source)
+    cur_session.store_objects(source_best)
 
-    cursession().store_objects(source)
-    cursession().store_objects(source_best)
 
 def get_plot_html():
-    import uuid
-    from bokeh.resources import Resources
-    from bokeh.templates import AUTOLOAD_SERVER
-    from bokeh.util.string import encode_utf8
-    elementid = str(uuid.uuid4())
-    resources = Resources(root_url=cursession().root_url, mode="server")
-    tag = AUTOLOAD_SERVER.render(
-        src_path = resources._autoload_path(elementid),
-        elementid = elementid,
-        modelid = plot_id + 'figure',
-        root_url = resources.root_url,
-        docid =  cursession().docid,
-        docapikey = cursession().apikey,
-        loglevel = resources.log_level,
-        public = False
-    )
-    return encode_utf8(tag)
+    global p
+    return autoload_server(p, cursession())
+
 
 def index(request):
     global initialized
