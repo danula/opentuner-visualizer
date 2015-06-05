@@ -5,7 +5,7 @@ var selected_points;
 
 var config_table;
 $(document).ready(function () {
-    config_table = $('#configuration-table').dynatable().data('dynatable');
+    config_table = jQuery('#configuration-table').dynatable().data('dynatable');
 });
 
 setInterval(function () {
