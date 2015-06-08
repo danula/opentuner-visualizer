@@ -21,6 +21,7 @@ function update_conf_details(obj) {
         type: "GET",
         url: '/plot/config/' + obj.join(),
         success: function (response) {
+            console.log(response);
             update_table_structure(response.columns);
             config_table = jQuery('#configuration-table').dynatable({
                 dataset: {
