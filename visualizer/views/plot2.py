@@ -1,27 +1,23 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
-
-import constants
 import json
-
 import pickle
 import zlib
-import pandas as pd
 import sqlite3 as lite
-import time
+from collections import OrderedDict
+from django.http import HttpResponse
 
-import opentuner
+import pandas as pd
 import numpy as np
 from sklearn import manifold
 from sklearn.metrics import euclidean_distances
 from sklearn.decomposition import PCA
-
-from collections import OrderedDict
-from django.http import HttpResponse
 from bokeh.plotting import *
 from bokeh.embed import autoload_server
-from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
+from bokeh.models import HoverTool, ColumnDataSource, Callback
+
+import constants
+import opentuner
 
 
 def unpickle_data(data):
@@ -52,8 +48,12 @@ def get_data():
         data['conf_data'][i] = unpickle_data(val)
     grouped = data.groupby('was_new_best')
 
-    colors = ["red" if (val >= 0.175) else "blue" for val in data['time'].values]
 
+    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    x = data['time']
+    print(x)
+    colors = ["#%02x%02x%02x" % (255 - r, r, 0) for r in np.floor(256*3*x)]
+    print(colors)
     return data, grouped.get_group(1), colors
 
 
@@ -84,6 +84,7 @@ def get_configs(data):
     return data, dims, confs, col
 
 
+
 def mds(dims, confs):
     seed = np.random.RandomState(seed=dims)
 
@@ -103,6 +104,7 @@ def mds(dims, confs):
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
     #npos = nmds.fit_transform(similarities, init=pos)
+
 
 
     print "##########"
@@ -166,6 +168,7 @@ def initialize_plot():
     # pos = mds(dims,confs)
     pos = isomap(dims, confs)
 
+
     source = ColumnDataSource(data=dict(
         x=timestamp(data['timestamp']),
         y=data['time'],
@@ -190,7 +193,7 @@ def initialize_plot():
     )
 
     p.circle('x1', 'y1', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
-    #p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=5)
+    # p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=5)
 
     callback = Callback(args=dict(source=source), code="""
         var arr = cb_obj.get('selected')['1d'].indices;
@@ -267,16 +270,16 @@ def config(request, points_id):
             equal = True
             value = data[0][0][key]
             for i in range(len(data)):
-                if (len(data) < 5):
+                if len(data) < 5:
                     record[str(data[i][1])] = data[i][0][key]
                 # if value == 'default':
-                #    value = data[i][0][key]
+                # value = data[i][0][key]
                 #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
             record['equal'] = equal
-            if (len(data) >= 5):
+            if len(data) >= 5:
                 if equal:
                     record['value'] = value
                 else:
@@ -293,7 +296,7 @@ def config(request, points_id):
             return -1 if a['name'] < b['name'] else 1
 
         table_data.sort(cmp_items)
-        if (len(data) < 5):
+        if len(data) < 5:
             columns = [str(data[i][1]) for i in range(len(rows))]
         else:
             columns = ['Value']
