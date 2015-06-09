@@ -58,7 +58,7 @@ def get_data():
 
 
 def get_configs(data):
-    with open("/home/danula/uom/fyp/opentuner/examples/gccflags/params", "r") as f1:
+    with open(constants.parameters, "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
             if p.is_primitive():
