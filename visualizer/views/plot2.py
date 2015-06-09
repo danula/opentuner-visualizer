@@ -31,8 +31,8 @@ def unpickle_data(data):
         pass
     return pickle.loads(data)
 
-def get_data():
 
+def get_data():
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
@@ -52,37 +52,39 @@ def get_data():
         data['conf_data'][i] = unpickle_data(val)
     grouped = data.groupby('was_new_best')
 
-    colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    colors = ["red" if (val >= 0.175) else "blue" for val in data['time'].values]
 
     return data, grouped.get_group(1), colors
 
+
 def get_configs(data):
-    with open("/home/danula/uom/fyp/opentuner/examples/gccflags/params","r") as f1:
+    with open("/home/danula/uom/fyp/opentuner/examples/gccflags/params", "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
             if p.is_primitive():
                 for d in data['conf_data']:
                     d[p.name] = p.get_unit_value(d)
-            elif isinstance(p,opentuner.search.manipulator.EnumParameter):
+            elif isinstance(p, opentuner.search.manipulator.EnumParameter):
                 options = p.options
                 for d in data['conf_data']:
-                    d[p.name] = (options.index(p.get_value(d))+0.4999)/len(options)
+                    d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
 
     dims = data['conf_data'][0].__len__()
     print data.__len__()
     keys = data['conf_data'][0].keys()
-    confs = np.ndarray(shape=(data.__len__(),dims),dtype=float)
+    confs = np.ndarray(shape=(data.__len__(), dims), dtype=float)
     col = []
     for p, d in enumerate(data['conf_data']):
-        if data['time'][p]>0.175:
+        if data['time'][p] > 0.175:
             col.append('g')
         else:
             col.append('r')
-        for j,k in enumerate(keys):
+        for j, k in enumerate(keys):
             confs[p][j] = d[k]
-    return data,dims,confs,col
+    return data, dims, confs, col
 
-def mds(dims,confs):
+
+def mds(dims, confs):
     seed = np.random.RandomState(seed=dims)
 
     X_true = confs
@@ -95,10 +97,11 @@ def mds(dims,confs):
 
     # Add noise to the similarities
 
-    mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed,dissimilarity="precomputed", n_jobs=1)
+    mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed, dissimilarity="precomputed",
+                       n_jobs=-1)
     pos = mds.fit(similarities).embedding_
 
-    #nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
     #npos = nmds.fit_transform(similarities, init=pos)
 
 
@@ -115,24 +118,59 @@ def mds(dims,confs):
     return pos
 
 
+def isomap(dims, confs):
+    seed = np.random.RandomState(seed=dims)
+
+    X_true = confs
+    # Center the data
+    X_true -= X_true.mean()
+
+    similarities = euclidean_distances(X_true)
+
+    print "##########"
+
+    # Add noise to the similarities
+
+    imap = manifold.Isomap(n_components=2, max_iter=3000)
+    pos = imap.fit(X_true).embedding_
+
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
+
+    print "##########"
+    # Rescale the data
+    pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
+
+    # Rotate the data
+    clf = PCA(n_components=2)
+    #X_true = clf.fit_transform(X_true)
+
+    pos = clf.fit_transform(pos)
+
+    return pos
+
 
 initialized = False
 
+
 def timestamp(data):
-    return (data - data[0])/1000000000
+    return (data - data[0]) / 1000000000
+
 
 def initialize_plot():
     global p, source, source_best, initialized, cur_session
     initialized = True
     data, best_data, colors = get_data()
-    data,dims,confs,col = get_configs(data)
-    pos = mds(dims,confs)
+    data, dims, confs, col = get_configs(data)
+    # pos = mds(dims,confs)
+    pos = isomap(dims, confs)
 
     source = ColumnDataSource(data=dict(
         x=timestamp(data['timestamp']),
         y=data['time'],
         x1=pos[:, 0],
-        y1=pos[:,1],
+        y1=pos[:, 1],
         conf_id=data['conf_id'],
         fill_color=colors
     ))
@@ -165,7 +203,7 @@ def initialize_plot():
         }
     """)
 
-    source.callback=callback
+    source.callback = callback
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = OrderedDict([
@@ -231,7 +269,7 @@ def config(request, points_id):
             for i in range(len(data)):
                 if (len(data) < 5):
                     record[str(data[i][1])] = data[i][0][key]
-                #if value == 'default':
+                # if value == 'default':
                 #    value = data[i][0][key]
                 #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
@@ -246,15 +284,16 @@ def config(request, points_id):
             table_data.append(record)
 
         def cmp_items(a, b):
-            if a['equal'] :
-                if b['equal'] :
+            if a['equal']:
+                if b['equal']:
                     return -1 if a['name'] < b['name'] else 1
                 return -1
             if b['equal']:
                 return 1
             return -1 if a['name'] < b['name'] else 1
+
         table_data.sort(cmp_items)
-        if (len(data)<5):
+        if (len(data) < 5):
             columns = [str(data[i][1]) for i in range(len(rows))]
         else:
             columns = ['Value']
