@@ -152,6 +152,37 @@ def isomap(dims, confs):
 
     return pos
 
+def tsne(dims, confs):
+    seed = np.random.RandomState(seed=dims)
+
+    X_true = confs
+    # Center the data
+    X_true -= X_true.mean()
+
+    similarities = euclidean_distances(X_true)
+
+    print "##########"
+
+    # Add noise to the similarities
+
+    imap = manifold.TSNE(n_components=2, random_state=seed, metric="precomputed")
+    pos = imap.fit_transform(similarities)
+
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
+
+    print "##########"
+    # Rescale the data
+    pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
+
+    # Rotate the data
+    clf = PCA(n_components=2)
+    #X_true = clf.fit_transform(X_true)
+
+    pos = clf.fit_transform(pos)
+
+    return pos
 
 initialized = False
 
@@ -167,6 +198,7 @@ def initialize_plot():
     data, dims, confs, col = get_configs(data)
     # pos = mds(dims,confs)
     pos = isomap(dims, confs)
+    # pos = tsne(dims, confs)
 
 
     source = ColumnDataSource(data=dict(
