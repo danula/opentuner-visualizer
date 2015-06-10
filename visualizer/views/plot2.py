@@ -48,10 +48,16 @@ def get_data():
         data['conf_data'][i] = unpickle_data(val)
     grouped = data.groupby('was_new_best')
 
-    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    def to_int(x):
+        try:
+            return int(x)
+        except OverflowError:
+            return 255
+
     x = data['time']
     print(x)
-    colors = ["#%02x%02x%02x" % (255 - r, r, 0) for r in np.floor(256*3*x)]
+    colors = ["#%02x%02x%02x" % (to_int(255 - 256 * 3*r / x.max()), to_int(256 *3* r / x.max()), 0) for r in
+              x.astype(float)]
     print(colors)
     return data, grouped.get_group(1), colors
 
@@ -110,7 +116,7 @@ def mds(dims, confs):
 
     # Rotate the data
     clf = PCA(n_components=2)
-    #X_true = clf.fit_transform(X_true)
+    # X_true = clf.fit_transform(X_true)
 
     pos = clf.fit_transform(pos)
 
@@ -236,7 +242,7 @@ def config(request, points_id):
                     record[str(data[i][1])] = data[i][0][key]
                 # if value == 'default':
                 # value = data[i][0][key]
-                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
