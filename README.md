@@ -17,4 +17,4 @@ conda install bokeh django
 - Start the bokeh-server (`bokeh_server`)
 - Add the database url to `constants.py`
 - Run the django server (`python manage.py runserver`)
-- Go to [http://localhost:8000](http://localhost:8080)
+- Go to [http://localhost:8000](http://localhost:8000)
