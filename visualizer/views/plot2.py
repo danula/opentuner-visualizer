@@ -53,7 +53,7 @@ def get_data():
             return int(x)
         except OverflowError:
             return 255
-
+    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     x = data['time']
     print(x)
     colors = ["#%02x%02x%02x" % (to_int(255 - 256 * 3*r / x.max()), to_int(256 *3* r / x.max()), 0) for r in
@@ -63,7 +63,7 @@ def get_data():
 
 
 def get_configs(data):
-    with open("/home/madawa/cse/fyp/opentuner/examples/gccflags/params", "r") as f1:
+    with open(constants.parameters, "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
             if p.is_primitive():
@@ -89,6 +89,7 @@ def get_configs(data):
     return data, dims, confs, col
 
 
+
 def mds(dims, confs):
     seed = np.random.RandomState(seed=dims)
 
@@ -103,11 +104,45 @@ def mds(dims, confs):
     # Add noise to the similarities
 
     mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed, dissimilarity="precomputed",
-                       n_jobs=1)
+                       n_jobs=-1)
     pos = mds.fit(similarities).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    # npos = nmds.fit_transform(similarities, init=pos)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
+
+
+    print "##########"
+    # Rescale the data
+    pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
+
+    # Rotate the data
+    clf = PCA(n_components=2)
+    #X_true = clf.fit_transform(X_true)
+
+    pos = clf.fit_transform(pos)
+
+    return pos
+
+
+def isomap(dims, confs):
+    seed = np.random.RandomState(seed=dims)
+
+    X_true = confs
+    # Center the data
+    X_true -= X_true.mean()
+
+    similarities = euclidean_distances(X_true)
+
+    print "##########"
+
+    # Add noise to the similarities
+
+    imap = manifold.Isomap(n_components=2, max_iter=3000)
+    pos = imap.fit(X_true).embedding_
+
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    #npos = nmds.fit_transform(similarities, init=pos)
 
 
     print "##########"
@@ -122,6 +157,37 @@ def mds(dims, confs):
 
     return pos
 
+def tsne(dims, confs):
+    seed = np.random.RandomState(seed=dims)
+
+    X_true = confs
+    # Center the data
+    X_true -= X_true.mean()
+
+    similarities = euclidean_distances(X_true)
+
+    print "##########"
+
+    # Add noise to the similarities
+
+    imap = manifold.TSNE(n_components=2, random_state=seed, metric="precomputed")
+    pos = imap.fit_transform(similarities)
+
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
+
+    print "##########"
+    # Rescale the data
+    pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
+
+    # Rotate the data
+    clf = PCA(n_components=2)
+    #X_true = clf.fit_transform(X_true)
+
+    pos = clf.fit_transform(pos)
+
+    return pos
 
 initialized = False
 
@@ -135,7 +201,10 @@ def initialize_plot():
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
-    pos = mds(dims, confs)
+    # pos = mds(dims,confs)
+    pos = isomap(dims, confs)
+    # pos = tsne(dims, confs)
+
 
     source = ColumnDataSource(data=dict(
         x=timestamp(data['timestamp']),
