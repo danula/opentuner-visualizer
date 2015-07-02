@@ -6,15 +6,15 @@
 Depends on [Bokeh](http://github.com/bokeh/bokeh) library for plotting.
 On Ubuntu/Debian run:
 ```
-sudo pip install bokeh
+sudo pip install bokeh django
 ```
 
 Intall via conda:
 ```
-conda install bokeh
+conda install bokeh django
 ``` 
 ### Run
 - Start the bokeh-server (`bokeh_server`)
 - Add the database url to `constants.py`
-- Run visualize.py script (`python visualize.py`)
-  
+- Run the django server (`python manage.py runserver`)
+- Go to [http://localhost:8000](http://localhost:8000)
