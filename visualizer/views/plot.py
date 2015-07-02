@@ -157,9 +157,16 @@ def config(request, points_id):
             record = {'name': key}
             equal = True
             value = data[0][0][key]
+            values = {}
             for i in range(len(data)):
                 if (len(data) < 5):
                     record[str(data[i][1])] = data[i][0][key]
+
+                if (data[i][0][key] not in values):
+                    values[data[i][0][key]] = 1
+                else:
+                    values[data[i][0][key]] = values[data[i][0][key]] + 1
+
                 #if value == 'default':
                 #    value = data[i][0][key]
                 #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
@@ -168,10 +175,11 @@ def config(request, points_id):
 
             record['equal'] = equal
             if (len(data) >= 5):
-                if equal:
-                    record['value'] = value
-                else:
-                    record['value'] = 'Unequal'
+                record['value'] = str(values)
+                # if equal:
+                #     record['value'] = value
+                # else:
+                #     record['value'] = 'Unequal'
             table_data.append(record)
 
         def cmp_items(a, b):

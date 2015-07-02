@@ -6,6 +6,8 @@ import zlib
 import sqlite3 as lite
 from collections import OrderedDict
 from django.http import HttpResponse
+import os
+from os import path
 
 import pandas as pd
 import numpy as np
@@ -51,13 +53,19 @@ def get_data():
     #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     x = data['time']
     print(x)
-    colors = ["#%02x%02x%02x" % (255 - r, r, 0) for r in np.floor(256*3*x)]
+    def to_int(x):
+        try:
+            return int(max(0, min(255, x)))
+        except OverflowError:
+            return 255
+    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*x)]
     print(colors)
     return data, grouped.get_group(1), colors
 
 
 def get_configs(data):
-    with open("/home/madawa/cse/fyp/opentuner/examples/gccflags/params", "r") as f1:
+    param_file = os.path.join(os.path.join(path.dirname(constants.database_url), os.pardir), "params")
+    with open(param_file, "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
             if p.is_primitive():
