@@ -50,15 +50,16 @@ def get_data():
         data['conf_data'][i] = unpickle_data(val)
     grouped = data.groupby('was_new_best')
 
-    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
-    x = data['time']
-    print(x)
     def to_int(x):
         try:
             return int(max(0, min(255, x)))
         except OverflowError:
             return 255
-    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*x)]
+    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    x = data['time']
+    print(x)
+    colors = ["#%02x%02x%02x" % (to_int(255 - 256 * 3*r / x.max()), to_int(256 *3* r / x.max()), 0) for r in
+              x.astype(float)]
     print(colors)
     return data, grouped.get_group(1), colors
 
@@ -91,6 +92,7 @@ def get_configs(data):
     return data, dims, confs, col
 
 
+
 def mds(dims, confs):
     seed = np.random.RandomState(seed=dims)
 
@@ -105,11 +107,12 @@ def mds(dims, confs):
     # Add noise to the similarities
 
     mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed, dissimilarity="precomputed",
-                       n_jobs=1)
+                       n_jobs=-1)
     pos = mds.fit(similarities).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    # npos = nmds.fit_transform(similarities, init=pos)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
 
 
     print "##########"
@@ -125,6 +128,70 @@ def mds(dims, confs):
     return pos
 
 
+def isomap(dims, confs):
+    seed = np.random.RandomState(seed=dims)
+
+    X_true = confs
+    # Center the data
+    X_true -= X_true.mean()
+
+    similarities = euclidean_distances(X_true)
+
+    print "##########"
+
+    # Add noise to the similarities
+
+    imap = manifold.Isomap(n_components=2, max_iter=3000)
+    pos = imap.fit(X_true).embedding_
+
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
+
+    print "##########"
+    # Rescale the data
+    pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
+
+    # Rotate the data
+    clf = PCA(n_components=2)
+    # X_true = clf.fit_transform(X_true)
+
+    pos = clf.fit_transform(pos)
+
+    return pos
+
+def tsne(dims, confs):
+    seed = np.random.RandomState(seed=dims)
+
+    X_true = confs
+    # Center the data
+    X_true -= X_true.mean()
+
+    similarities = euclidean_distances(X_true)
+
+    print "##########"
+
+    # Add noise to the similarities
+
+    imap = manifold.TSNE(n_components=2, random_state=seed, metric="precomputed")
+    pos = imap.fit_transform(similarities)
+
+    # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
+    #npos = nmds.fit_transform(similarities, init=pos)
+
+
+    print "##########"
+    # Rescale the data
+    pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
+
+    # Rotate the data
+    clf = PCA(n_components=2)
+    #X_true = clf.fit_transform(X_true)
+
+    pos = clf.fit_transform(pos)
+
+    return pos
+
 initialized = False
 
 
@@ -137,7 +204,10 @@ def initialize_plot():
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
-    pos = mds(dims, confs)
+    pos = mds(dims,confs)
+    # pos = isomap(dims, confs)
+    # pos = tsne(dims, confs)
+
 
     source = ColumnDataSource(data=dict(
         x=timestamp(data['timestamp']),
@@ -244,7 +314,7 @@ def config(request, points_id):
                     record[str(data[i][1])] = data[i][0][key]
                 # if value == 'default':
                 # value = data[i][0][key]
-                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 

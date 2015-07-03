@@ -158,6 +158,7 @@ def config(request, points_id):
             equal = True
             value = data[0][0][key]
             values = {}
+            max = 0
             for i in range(len(data)):
                 if (len(data) < 5):
                     record[str(data[i][1])] = data[i][0][key]
@@ -167,12 +168,16 @@ def config(request, points_id):
                 else:
                     values[data[i][0][key]] = values[data[i][0][key]] + 1
 
+                if values[data[i][0][key]] > max:
+                    max = values[data[i][0][key]]
+
                 #if value == 'default':
                 #    value = data[i][0][key]
                 #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
+            record['max_count'] = max
             record['equal'] = equal
             if (len(data) >= 5):
                 record['value'] = str(values)
@@ -183,13 +188,12 @@ def config(request, points_id):
             table_data.append(record)
 
         def cmp_items(a, b):
-            if a['equal'] :
-                if b['equal'] :
-                    return -1 if a['name'] < b['name'] else 1
+            if a['max_count'] > b['max_count']:
                 return -1
-            if b['equal']:
+            elif a['max_count'] < b['max_count']:
                 return 1
-            return -1 if a['name'] < b['name'] else 1
+            else:
+                return -1 if a['name'] < b['name'] else 1
         table_data.sort(cmp_items)
         if (len(data)<5):
             columns = [str(data[i][1]) for i in range(len(rows))]
