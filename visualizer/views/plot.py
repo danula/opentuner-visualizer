@@ -32,16 +32,18 @@ def get_data():
         cur = con.cursor()
         cur.execute(
             "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
-            + " collection_date as 'ts [timestamp]', configuration.data as conf_data "
+            + " collection_date as 'ts [timestamp]'"
             + " FROM result "
             + " JOIN desired_result ON desired_result.result_id = result.id  "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
-            + " WHERE result.state='OK' "
+            + " WHERE result.state='OK' AND time < 1000000 "
+            # Add this line for JVM
+            + " AND result.tuning_run_id=1"
             + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
 
-    cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "timestamp", "conf_data"]
+    cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "timestamp"]
     data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "timestamp", "conf_id"]]
 
     grouped = data.groupby('was_new_best')

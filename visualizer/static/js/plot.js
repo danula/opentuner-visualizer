@@ -20,7 +20,7 @@ setInterval(function () {
         type: "GET",
         url: '/plot/update/'
     });
-}, 5000);
+}, 60000);
 
 function update_conf_details(obj) {
     $.ajax({
