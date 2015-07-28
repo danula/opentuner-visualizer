@@ -55,11 +55,11 @@ def get_data():
             return int(max(0, min(255, x)))
         except OverflowError:
             return 255
-    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+
+    # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     x = data['time']
     print(x)
-    colors = ["#%02x%02x%02x" % (to_int(255 - 256 * 3*r / x.max()), to_int(256 *3* r / x.max()), 0) for r in
-              x.astype(float)]
+    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*x)]
     print(colors)
     return data, grouped.get_group(1), colors
 
@@ -92,7 +92,6 @@ def get_configs(data):
     return data, dims, confs, col
 
 
-
 def mds(dims, confs):
     seed = np.random.RandomState(seed=dims)
 
@@ -111,7 +110,7 @@ def mds(dims, confs):
     pos = mds.fit(similarities).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    #npos = nmds.fit_transform(similarities, init=pos)
+    # npos = nmds.fit_transform(similarities, init=pos)
 
 
 
@@ -145,7 +144,7 @@ def isomap(dims, confs):
     pos = imap.fit(X_true).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    #npos = nmds.fit_transform(similarities, init=pos)
+    # npos = nmds.fit_transform(similarities, init=pos)
 
 
     print "##########"
@@ -159,6 +158,7 @@ def isomap(dims, confs):
     pos = clf.fit_transform(pos)
 
     return pos
+
 
 def tsne(dims, confs):
     seed = np.random.RandomState(seed=dims)
@@ -177,7 +177,7 @@ def tsne(dims, confs):
     pos = imap.fit_transform(similarities)
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    #npos = nmds.fit_transform(similarities, init=pos)
+    # npos = nmds.fit_transform(similarities, init=pos)
 
 
     print "##########"
@@ -192,6 +192,7 @@ def tsne(dims, confs):
 
     return pos
 
+
 initialized = False
 
 
@@ -204,7 +205,7 @@ def initialize_plot():
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
-    pos = mds(dims,confs)
+    pos = mds(dims, confs)
     # pos = isomap(dims, confs)
     # pos = tsne(dims, confs)
 
