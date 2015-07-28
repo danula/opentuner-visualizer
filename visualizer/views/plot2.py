@@ -6,8 +6,6 @@ import zlib
 import sqlite3 as lite
 from collections import OrderedDict
 from django.http import HttpResponse
-import os
-from os import path
 
 import pandas as pd
 import numpy as np
@@ -39,7 +37,9 @@ def get_data():
             + " FROM result "
             + " JOIN desired_result ON desired_result.result_id = result.id  "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
-            + " WHERE result.state='OK' "
+            + " WHERE result.state='OK' AND time < 1000000 "
+            # Add this line for JVM
+            + " AND result.tuning_run_id=1 "
             + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
@@ -65,8 +65,7 @@ def get_data():
 
 
 def get_configs(data):
-    param_file = os.path.join(os.path.join(path.dirname(constants.database_url), os.pardir), "params")
-    with open(param_file, "r") as f1:
+    with open(constants.manipulator_url, "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
             if p.is_primitive():
@@ -75,7 +74,11 @@ def get_configs(data):
             elif isinstance(p, opentuner.search.manipulator.EnumParameter):
                 options = p.options
                 for d in data['conf_data']:
-                    d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
+                    try:
+                        d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
+                    except:
+                        print("Invalid Configuration", p, p.name, d)
+                        d[p.name] = 0
 
     dims = data['conf_data'][0].__len__()
     print data.__len__()
