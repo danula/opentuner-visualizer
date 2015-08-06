@@ -181,8 +181,7 @@ def config(request, points_id):
 
             record['max_count'] = max
             record['equal'] = equal
-            if (len(data) >= 5):
-                record['value'] = str(values)
+            record['value'] = str(values)
                 # if equal:
                 #     record['value'] = value
                 # else:

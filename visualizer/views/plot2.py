@@ -232,8 +232,7 @@ def initialize_plot():
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
     p = figure(
-        tools=TOOLS, title="OpenTuner",
-        x_axis_label='Time in seconds', y_axis_label='Result Time'
+        tools=TOOLS, title="OpenTuner"
     )
 
     p.circle('x1', 'y1', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
