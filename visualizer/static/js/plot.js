@@ -5,9 +5,9 @@ var enable_comparison;
 var select_first_set;
 var first_set;
 var second_set;
-var full_set;
-
+var comparisonControls = $("#comparison-controls");
 var config_table;
+
 $(document).ready(function () {
     config_table = jQuery('#configuration-table').dynatable();
     $.fn.bootstrapSwitch.defaults.size = 'normal';
@@ -20,7 +20,7 @@ setInterval(function () {
         type: "GET",
         url: '/plot/update/'
     });
-}, 60000);
+}, 500000);
 
 function update_conf_details(obj) {
     $.ajax({
@@ -59,9 +59,9 @@ function update_conf_details(obj) {
 }
 
 function update_table_structure(columns) {
-    table_html_start = "<table id='configuration-table' class='table table-bordered'><thead>";
-    table_html_end = "</thead><tbody></tbody></table>";
-    table_html_body = "";
+    var table_html_start = "<table id='configuration-table' class='table table-bordered'><thead>";
+    var table_html_end = "</thead><tbody></tbody></table>";
+    var table_html_body = "";
 
     for (var i = 0; i < columns.length; ++i) {
         table_html_body += "<th>" + columns[i] + "</th>";
@@ -71,25 +71,27 @@ function update_table_structure(columns) {
 }
 
 function enableComparison() {
+    comparisonControls = $("#comparison-controls");
     if ($("#enable-comparison").prop('checked')) {
         enable_comparison = true;
         select_first_set = true;
-        $("#comparison-controls").html("Select first set and click next. <br> <input type='button' value='Next' style='padding-right: 20px; padding-left: 20px;' onclick='nextSet()'>");
-        $("#comparison-controls").fadeIn();
+        comparisonControls.html("Select first set and click next. <br> <input type='button' value='Next' style='padding-right: 20px; padding-left: 20px;' onclick='nextSet()'>");
+        comparisonControls.fadeIn();
     }
     else {
         enable_comparison = false;
         select_first_set = false;
-        $("#comparison-controls").fadeOut();
+        comparisonControls.fadeOut();
     }
 }
 
 function nextSet() {
+    comparisonControls = $("#comparison-controls");
     if (select_first_set && first_set != null) {
         select_first_set = false;
-        $("#comparison-controls").fadeOut(function () {
-            $("#comparison-controls").html("Select second set and click next. <br> <input type='button' value='Next' style='padding-right: 20px; padding-left: 20px;' onclick='nextSet()'>");
-            $("#comparison-controls").fadeIn();
+        comparisonControls.fadeOut(function () {
+            comparisonControls.html("Select second set and click next. <br> <input type='button' value='Next' style='padding-right: 20px; padding-left: 20px;' onclick='nextSet()'>");
+            comparisonControls.fadeIn();
         });
     }
     else if (first_set == null) {
@@ -99,18 +101,25 @@ function nextSet() {
         alert("Second set cannot be empty!\nPlease select a region on map to proceed.");
     }
     else if (!select_first_set && second_set != null) {
-       $("#comparison-controls").fadeOut(function () {
-           showComparison();
+        comparisonControls.fadeOut(function () {
+            showComparison();
         });
     }
 }
 
 function showComparison() {
-    full_set = $.extend(true, first_set, second_set);
+    console.log(second_set)
+    for (var i = 0; i < first_set.length; i++) {
+        for (var j= 0; j < second_set.length; j++) {
+            if(first_set[i].name == second_set[j].name) {
+                first_set[i].second = second_set[j].second
+            }
+        }
+    }
     update_table_structure(["Name", "First", "Second"]);
     config_table = jQuery('#configuration-table').dynatable({
         dataset: {
-            records: full_set
+            records: first_set
         }
     }).on('click', 'tr', function() {
         $.ajax({

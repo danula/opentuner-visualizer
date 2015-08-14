@@ -55,7 +55,8 @@ def get_data():
             return int(max(0, min(255, x)))
         except OverflowError:
             return 255
-    #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+
+    # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     x = data['time']
     print(x)
     colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
@@ -94,7 +95,6 @@ def get_configs(data):
     return data, dims, confs, col
 
 
-
 def mds(dims, confs):
     seed = np.random.RandomState(seed=dims)
 
@@ -113,7 +113,7 @@ def mds(dims, confs):
     pos = mds.fit(similarities).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    #npos = nmds.fit_transform(similarities, init=pos)
+    # npos = nmds.fit_transform(similarities, init=pos)
 
 
 
@@ -147,7 +147,7 @@ def isomap(dims, confs):
     pos = imap.fit(X_true).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    #npos = nmds.fit_transform(similarities, init=pos)
+    # npos = nmds.fit_transform(similarities, init=pos)
 
 
     print "##########"
@@ -161,6 +161,7 @@ def isomap(dims, confs):
     pos = clf.fit_transform(pos)
 
     return pos
+
 
 def tsne(dims, confs):
     seed = np.random.RandomState(seed=dims)
@@ -179,7 +180,7 @@ def tsne(dims, confs):
     pos = imap.fit_transform(similarities)
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
-    #npos = nmds.fit_transform(similarities, init=pos)
+    # npos = nmds.fit_transform(similarities, init=pos)
 
 
     print "##########"
@@ -194,6 +195,7 @@ def tsne(dims, confs):
 
     return pos
 
+
 initialized = False
 
 
@@ -206,7 +208,7 @@ def initialize_plot():
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
-    pos = mds(dims,confs)
+    pos = mds(dims, confs)
     # pos = isomap(dims, confs)
     # pos = tsne(dims, confs)
 
@@ -230,8 +232,7 @@ def initialize_plot():
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
     p = figure(
-        tools=TOOLS, title="OpenTuner",
-        x_axis_label='Time in seconds', y_axis_label='Result Time'
+        tools=TOOLS, title="OpenTuner"
     )
 
     p.circle('x1', 'y1', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
