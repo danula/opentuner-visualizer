@@ -9,7 +9,7 @@ var full_set;
 
 var config_table;
 $(document).ready(function () {
-    config_table = jQuery('#configuration-table').dynatable().data('dynatable');
+    config_table = jQuery('#configuration-table').dynatable();
     $.fn.bootstrapSwitch.defaults.size = 'normal';
     $("#enable-comparison").bootstrapSwitch();
     enableComparison();
@@ -33,6 +33,11 @@ function update_conf_details(obj) {
                     dataset: {
                         records: response.data
                     }
+                }).on('click', 'tr', function() {
+                    $.ajax({
+                        type: "GET",
+                        url: '/plot/highlight_flag/?flag=' + $(this).children(":first").text()
+                    });
                 });
             } else {
                 if (select_first_set) {
@@ -107,6 +112,11 @@ function showComparison() {
         dataset: {
             records: full_set
         }
+    }).on('click', 'tr', function() {
+        $.ajax({
+            type: "GET",
+            url: '/plot/highlight_flag/?flag=' + $(this).children(":first").text()
+        });
     });
     first_set = null;
     second_set = null;

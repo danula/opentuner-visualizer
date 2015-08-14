@@ -9,7 +9,9 @@ import pickle
 import zlib
 import pandas as pd
 import sqlite3 as lite
+import numpy as np
 import time
+import opentuner
 
 from collections import OrderedDict
 from django.http import HttpResponse
@@ -25,14 +27,23 @@ def unpickle_data(data):
         pass
     return pickle.loads(data)
 
+def get_color_numeric(val, parameter):
+    t = parameter.get_unit_value(val) * 255
+    return "#%02x%02x%02x" % (t, 255 - t, 0)
+
+def get_color_enum(val, parameter):
+    t = 255 * (parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options)
+    print(t)
+    return "#%02x%02x%02x" % (t, 255 - t, 0)
 
 def get_data():
+    global highlighted_flag
 
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
-            + " collection_date as 'ts [timestamp]'"
+            + " collection_date as 'ts [timestamp]', configuration.data as conf_data"
             + " FROM result "
             + " JOIN desired_result ON desired_result.result_id = result.id  "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
@@ -43,12 +54,25 @@ def get_data():
         )
         rows = cur.fetchall()
 
-    cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "timestamp"]
-    data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "timestamp", "conf_id"]]
+    cols = ["result_id", "generation", "conf_id", "time", "requestor", "was_new_best", "timestamp", "conf_data"]
+    data = pd.DataFrame(rows, columns=cols)[["result_id", "time", "was_new_best", "timestamp", "conf_id", "conf_data"]]
 
     grouped = data.groupby('was_new_best')
 
-    colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    if highlighted_flag is None:
+        colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    else:
+        parameter = None
+        for par in manipulator.params:
+            if par.name == highlighted_flag:
+                parameter = par
+                break
+        if parameter.is_primitive():
+            colors = [get_color_numeric(unpickle_data(val), parameter) for val in data['conf_data'].values]
+        elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
+            colors = [get_color_enum(unpickle_data(val), parameter) for val in data['conf_data'].values]
+        else:
+            colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
 
     return data, grouped.get_group(1), colors
 
@@ -58,7 +82,11 @@ def timestamp(data):
     return (data - data[0])/1000000000
 
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session
+    global p, source, source_best, initialized, cur_session, highlighted_flag, manipulator
+    with open(constants.manipulator_url, "r") as f1:
+        manipulator = unpickle_data(f1.read())
+        print(manipulator)
+    highlighted_flag = None
     initialized = True
     data, best_data, colors = get_data()
     source = ColumnDataSource(data=dict(
@@ -137,6 +165,14 @@ def index(request):
 
 
 def update(request):
+    update_plot()
+    return HttpResponse("success")
+
+
+def highlight_flag(request):
+    global highlighted_flag
+    highlighted_flag = request.GET.get('flag', '')
+    print(highlighted_flag)
     update_plot()
     return HttpResponse("success")
 

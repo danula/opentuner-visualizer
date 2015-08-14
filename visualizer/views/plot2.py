@@ -58,7 +58,7 @@ def get_data():
     #colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     x = data['time']
     print(x)
-    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*x)]
+    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
     print(colors)
     return data, grouped.get_group(1), colors
 
