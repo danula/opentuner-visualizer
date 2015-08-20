@@ -16,6 +16,21 @@ $(document).ready(function () {
     $("#enable-comparison").bootstrapSwitch();
     enableComparison();
     token_field = $('#tokenfield');
+
+    $.ajax({
+        type: "GET",
+        url: '/plot/get_flags/',
+        success: function (response) {
+            token_field.tokenfield({
+                autocomplete: {
+                    source: response,
+                    delay: 200
+                },
+                showAutocompleteOnFocus: false
+            });
+        }
+    });
+
 });
 
 setInterval(function () {
@@ -31,13 +46,6 @@ function update_conf_details(obj) {
         url: '/plot/config/' + obj.join(),
         success: function (response) {
             if (enable_comparison == false) {
-                token_field.tokenfield({
-                    autocomplete: {
-                        source: response.flags,
-                        delay: 200
-                    },
-                    showAutocompleteOnFocus: false
-                });
                 update_table_structure(response.columns);
                 config_table = jQuery('#configuration-table').dynatable({
                     dataset: {
@@ -149,9 +157,9 @@ function showComparison() {
 function tokenFieldChange() {
     var selected_flags = token_field.tokenfield('getTokens');
     var flag_names = "";
-    var flag_status="";
+    var flag_status = "";
     $.each(selected_flags, function (index) {
-        if(selected_flags[index].status != -1) {
+        if (selected_flags[index].status != -1) {
             flag_names = flag_names + selected_flags[index].value + ",";
             flag_status = flag_status + selected_flags[index].status + ",";
         }

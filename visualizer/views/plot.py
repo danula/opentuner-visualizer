@@ -175,6 +175,24 @@ def update(request):
     return HttpResponse("success")
 
 
+def get_flags(request):
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+    cur.execute(
+        "SELECT configuration.data as conf_data"
+        + " FROM configuration"
+        + " WHERE configuration.id =1"
+    )
+    rows = cur.fetchall()
+    data = [(unpickle_data(d[0])) for d in rows]
+
+    flags = []
+    for key in data[0]:
+        flags.append({'value': key, 'label': key, 'status': 1})
+
+    return HttpResponse(json.dumps(flags), content_type="application/json")
+
+
 def highlight_flag(request):
     global highlighted_flag
     highlighted_flag = request.GET.get('flag', '')
@@ -217,7 +235,7 @@ def config(request, points_id):
 
                 # if value == 'default':
                 # value = data[i][0][key]
-                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
