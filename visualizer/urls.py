@@ -3,6 +3,8 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 import views.plot
 import views.plot2
+import views.upload
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -21,5 +23,8 @@ urlpatterns = patterns('',
     url(r'^plot2/$', views.plot2.index, name='plot'),
     url(r'^plot2/index/', views.plot2.index, name='plot'),
     url(r'^plot2/update/', views.plot2.update, name='plot_update'),
-    url(r'^plot2/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot2.config, name='detail')
+    url(r'^plot2/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot2.config, name='detail'),
+
+    url(r'^upload/$', views.upload.index, name='upload'),
+    url(r'^upload/index/', views.upload.index, name='upload')
 )
