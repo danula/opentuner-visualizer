@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
+from copy import deepcopy
 
 
 def unpickle_data(data):
@@ -177,7 +178,7 @@ def highlight_flag(request):
     return HttpResponse("success")
 
 
-def config(request, points_id):
+def config2(request, points_id):
     print(points_id)
     with lite.connect(constants.database_url) as con:
         cur = con.cursor()
@@ -229,6 +230,100 @@ def config(request, points_id):
                 return -1
             elif a['max_count'] < b['max_count']:
                 return 1
+            else:
+                return -1 if a['name'] < b['name'] else 1
+        table_data.sort(cmp_items)
+        if (len(data)<5):
+            columns = [str(data[i][1]) for i in range(len(rows))]
+        else:
+            columns = ['Value']
+        response_data = {'data': table_data, 'columns': ['Name'] + columns}
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+def getZeroToOneValues(data):
+    data2 = deepcopy(data)
+    with open(constants.manipulator_url, "r") as f1:
+        manipulator = unpickle_data(f1.read())
+        for p in manipulator.params:
+            if p.is_primitive():
+                for i in range(len(data)):
+                    data2[i][0][p.name] = p.get_unit_value(data2[i][0])
+                    #for d in data['conf_data']:
+                    #    d[p.name] = p.get_unit_value(d)
+            elif isinstance(p, opentuner.search.manipulator.EnumParameter):
+                options = p.options
+                for i in range(len(data)):
+                    try:
+                        data2[i][0][p.name] = (options.index(p.get_value(data2[i][0])) + 0.4999) / len(options)
+                    except:
+                        print("Invalid Configuration", p, p.name, data2[i][0])
+                        data2[i][0][p.name] = 0
+    return data2
+
+
+def config(request, points_id):
+    print(points_id)
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT configuration.data as conf_data, configuration.id"
+            + " FROM configuration"
+            + " WHERE configuration.id in (%s)" % points_id
+        )
+        rows = cur.fetchall()
+        data = [(unpickle_data(d[0]), d[1]) for d in rows]
+
+        table_data = []
+        data2 = getZeroToOneValues(data)
+
+        for key in data[0][0]:
+            record = {'name': key}
+            equal = True
+            value = data[0][0][key]
+            values = {}
+            data1=[]
+            max = 0
+            for i in range(len(data)):
+                if (len(data) < 5):
+                    record[str(data[i][1])] = data[i][0][key]
+
+                if data[i][0][key]=='off':
+                    data1.append(1)
+                elif data[i][0][key]=='on':
+                    data1.append(0)
+                else:
+                    data1.append(data2[i][0][key])
+
+
+                if (data[i][0][key] not in values):
+                    values[data[i][0][key]] = 1
+                else:
+                    values[data[i][0][key]] = values[data[i][0][key]] + 1
+
+                if values[data[i][0][key]] > max:
+                    max = values[data[i][0][key]]
+
+                #if value == 'default':
+                #    value = data[i][0][key]
+                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                if equal and (data[i][0][key] != value):
+                    equal = False
+
+            record['max_count'] = max
+            record['equal'] = equal
+            record['value'] = str(values)
+
+            a = np.array(data1)
+            record['stdev'] = np.std(a)
+            table_data.append(record)
+
+        def cmp_items(a, b):
+            if a['stdev'] > b['stdev']:
+                return 1
+            elif a['stdev'] < b['stdev']:
+                return -1
             else:
                 return -1 if a['name'] < b['name'] else 1
         table_data.sort(cmp_items)

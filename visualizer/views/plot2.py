@@ -294,7 +294,7 @@ def update(request):
     return HttpResponse("success")
 
 
-def config(request, points_id):
+def config2(request, points_id):
     print(points_id)
     with lite.connect(constants.database_url) as con:
         cur = con.cursor()
@@ -307,7 +307,6 @@ def config(request, points_id):
         data = [(unpickle_data(d[0]), d[1]) for d in rows]
 
         table_data = []
-
         for key in data[0][0]:
             record = {'name': key}
             equal = True
@@ -343,6 +342,46 @@ def config(request, points_id):
             columns = [str(data[i][1]) for i in range(len(rows))]
         else:
             columns = ['Value']
+        response_data = {'data': table_data, 'columns': ['Name'] + columns}
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+def config(request, points_id):
+    print(points_id)
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT configuration.data as conf_data, configuration.id"
+            + " FROM configuration"
+            + " WHERE configuration.id in (%s)" % points_id
+        )
+        rows = cur.fetchall()
+        data = [(unpickle_data(d[0]), d[1]) for d in rows]
+
+        table_data = []
+        for key in data[0][0]:
+            record = {'name': key}
+            value = data[0][0][key]
+            for i in range(len(data)):
+                if len(data) < 5:
+                    record[str(data[i][1])] = data[i][0][key]
+                # if value == 'default':
+                # value = data[i][0][key]
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                if equal and (data[i][0][key] != value):
+                    equal = False
+
+            values = [4,6,8,2,3]
+            record['stdev'] = np.std(values)
+
+            table_data.append(record)
+
+        def cmp_items(a, b):
+            return -1 if a['stdev'] < b['stdev'] else 1
+
+        table_data.sort(cmp_items)
+        columns = ['Value']
         response_data = {'data': table_data, 'columns': ['Name'] + columns}
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
