@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
+from copy import deepcopy
 
 
 def unpickle_data(data):
@@ -27,17 +28,20 @@ def unpickle_data(data):
         pass
     return pickle.loads(data)
 
+
 def get_color_numeric(val, parameter):
     t = parameter.get_unit_value(val) * 255
     return "#%02x%02x%02x" % (t, 255 - t, 0)
+
 
 def get_color_enum(val, parameter):
     t = 255 * (parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options)
     print(t)
     return "#%02x%02x%02x" % (t, 255 - t, 0)
 
+
 def get_data():
-    global highlighted_flag
+    global highlighted_flags
 
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
@@ -59,34 +63,46 @@ def get_data():
 
     grouped = data.groupby('was_new_best')
 
-    if highlighted_flag is None:
+    if highlighted_flags is None:
         colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     else:
-        parameter = None
-        for par in manipulator.params:
-            if par.name == highlighted_flag:
-                parameter = par
-                break
-        if parameter.is_primitive():
-            colors = [get_color_numeric(unpickle_data(val), parameter) for val in data['conf_data'].values]
-        elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
-            colors = [get_color_enum(unpickle_data(val), parameter) for val in data['conf_data'].values]
-        else:
+        configurations = [unpickle_data(val) for val in data['conf_data'].values]
+        values = [0 for val in configurations]
+        parameter_count = 0
+        for parameter in manipulator.params:
+            if parameter.name in highlighted_flags:
+                if parameter.is_primitive():
+                    values_temp = [parameter.get_unit_value(config) for config in configurations]
+                elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
+                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options) for val in configurations]
+                else:
+                    continue
+                parameter_count = parameter_count + 1
+                if (highlighted_flags[parameter.name] == "1"):
+                    values = [values[i]+values_temp[i] for i in range(len(values))]
+                else:
+                    values = [values[i]+1-values_temp[i] for i in range(len(values))]
+        if parameter_count == 0:
             colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+        else:
+            colors = ["#%02x%02x%02x" % (t*255/parameter_count, 255 - 255*t/parameter_count, 0) for t in values]
 
     return data, grouped.get_group(1), colors
 
+
 initialized = False
 
+
 def timestamp(data):
-    return (data - data[0])/1000000000
+    return (data - data[0]) / 1000000000
+
 
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session, highlighted_flag, manipulator
+    global p, source, source_best, initialized, cur_session, highlighted_flags, manipulator
     with open(constants.manipulator_url, "r") as f1:
         manipulator = unpickle_data(f1.read())
         print(manipulator)
-    highlighted_flag = None
+    highlighted_flags = None
     initialized = True
     data, best_data, colors = get_data()
     source = ColumnDataSource(data=dict(
@@ -124,7 +140,7 @@ def initialize_plot():
         }
     """)
 
-    source.callback=callback
+    source.callback = callback
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = OrderedDict([
@@ -169,12 +185,120 @@ def update(request):
     return HttpResponse("success")
 
 
+def get_flags(request):
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+    cur.execute(
+        "SELECT configuration.data as conf_data"
+        + " FROM configuration"
+        + " WHERE configuration.id =1"
+    )
+    rows = cur.fetchall()
+    data = [(unpickle_data(d[0])) for d in rows]
+
+    flags = []
+    for key in data[0]:
+        flags.append({'value': key, 'label': key, 'status': 1})
+
+    return HttpResponse(json.dumps(flags), content_type="application/json")
+
+
 def highlight_flag(request):
-    global highlighted_flag
-    highlighted_flag = request.GET.get('flag', '')
-    print(highlighted_flag)
+    global highlighted_flags
+    if request.GET.get('flags', '') == "":
+        highlighted_flags = None
+    else:
+        highlighted_flags = dict(zip(request.GET.get('flags', '').split(","), request.GET.get('status', '').split(",")))
+    print(highlighted_flags)
     update_plot()
     return HttpResponse("success")
+
+
+def config2(request, points_id):
+    print(points_id)
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT configuration.data as conf_data, configuration.id"
+            + " FROM configuration"
+            + " WHERE configuration.id in (%s)" % points_id
+        )
+        rows = cur.fetchall()
+        data = [(unpickle_data(d[0]), d[1]) for d in rows]
+        flags = []
+        table_data = []
+        for key in data[0][0]:
+            record = {'name': key}
+            flags.append({'value': key, 'label': key, 'status': 1})
+            equal = True
+            value = data[0][0][key]
+            values = {}
+            max = 0
+            for i in range(len(data)):
+                if (len(data) < 5):
+                    record[str(data[i][1])] = data[i][0][key]
+
+                if (data[i][0][key] not in values):
+                    values[data[i][0][key]] = 1
+                else:
+                    values[data[i][0][key]] = values[data[i][0][key]] + 1
+
+                if values[data[i][0][key]] > max:
+                    max = values[data[i][0][key]]
+
+                # if value == 'default':
+                # value = data[i][0][key]
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                if equal and (data[i][0][key] != value):
+                    equal = False
+
+            record['max_count'] = max
+            record['equal'] = equal
+            record['value'] = str(values)
+            # if equal:
+            # record['value'] = value
+            # else:
+            # record['value'] = 'Unequal'
+            table_data.append(record)
+
+        def cmp_items(a, b):
+            if a['max_count'] > b['max_count']:
+                return -1
+            elif a['max_count'] < b['max_count']:
+                return 1
+            else:
+                return -1 if a['name'] < b['name'] else 1
+
+        table_data.sort(cmp_items)
+        if (len(data) < 5):
+            columns = [str(data[i][1]) for i in range(len(rows))]
+        else:
+            columns = ['Value']
+        response_data = {'data': table_data, 'columns': ['Name'] + columns, 'flags': flags}
+        print(flags)
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+
+def getZeroToOneValues(data):
+    data2 = deepcopy(data)
+    with open(constants.manipulator_url, "r") as f1:
+        manipulator = unpickle_data(f1.read())
+        for p in manipulator.params:
+            if p.is_primitive():
+                for i in range(len(data)):
+                    data2[i][0][p.name] = p.get_unit_value(data2[i][0])
+                    #for d in data['conf_data']:
+                    #    d[p.name] = p.get_unit_value(d)
+            elif isinstance(p, opentuner.search.manipulator.EnumParameter):
+                options = p.options
+                for i in range(len(data)):
+                    try:
+                        data2[i][0][p.name] = (options.index(p.get_value(data2[i][0])) + 0.4999) / len(options)
+                    except:
+                        print("Invalid Configuration", p, p.name, data2[i][0])
+                        data2[i][0][p.name] = 0
+    return data2
 
 
 def config(request, points_id):
@@ -190,16 +314,26 @@ def config(request, points_id):
         data = [(unpickle_data(d[0]), d[1]) for d in rows]
 
         table_data = []
+        data2 = getZeroToOneValues(data)
 
         for key in data[0][0]:
             record = {'name': key}
             equal = True
             value = data[0][0][key]
             values = {}
+            data1=[]
             max = 0
             for i in range(len(data)):
                 if (len(data) < 5):
                     record[str(data[i][1])] = data[i][0][key]
+
+                if data[i][0][key]=='off':
+                    data1.append(1)
+                elif data[i][0][key]=='on':
+                    data1.append(0)
+                else:
+                    data1.append(data2[i][0][key])
+
 
                 if (data[i][0][key] not in values):
                     values[data[i][0][key]] = 1
@@ -218,17 +352,16 @@ def config(request, points_id):
             record['max_count'] = max
             record['equal'] = equal
             record['value'] = str(values)
-                # if equal:
-                #     record['value'] = value
-                # else:
-                #     record['value'] = 'Unequal'
+
+            a = np.array(data1)
+            record['stdev'] = np.std(a)
             table_data.append(record)
 
         def cmp_items(a, b):
-            if a['max_count'] > b['max_count']:
-                return -1
-            elif a['max_count'] < b['max_count']:
+            if a['stdev'] > b['stdev']:
                 return 1
+            elif a['stdev'] < b['stdev']:
+                return -1
             else:
                 return -1 if a['name'] < b['name'] else 1
         table_data.sort(cmp_items)
