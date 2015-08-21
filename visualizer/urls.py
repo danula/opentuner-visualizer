@@ -25,6 +25,7 @@ urlpatterns = patterns('',
     url(r'^plot2/update/', views.plot2.update, name='plot_update'),
     url(r'^plot2/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot2.config, name='detail'),
 
-    url(r'^upload/$', views.upload.index, name='upload'),
-    url(r'^upload/index/', views.upload.index, name='upload')
+    url(r'^upload/index/', views.upload.index, name='upload'),
+    url(r'^upload/upload_files/', views.upload.upload_files, name='upload_files'),
+    url(r'^upload/$', views.upload.index, name='upload')
 )
