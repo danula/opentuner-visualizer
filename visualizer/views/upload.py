@@ -2,6 +2,9 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+import os
+import constants
+from os import path
 
 __author__ = 'madawa'
 
@@ -11,20 +14,20 @@ def index(request):
     return render(request, 'upload.html')
 
 
-def save_file(f, fname):
-    global location
-    if fname is 'database':
-        location = '/configuration_files/database.db'
-    elif fname is 'manipulator':
-        location = '/configuration_files/manipulator'
+def save_file(f, config_type):
+    location = 'configuration_files/'
     try:
-        with open(location, 'wb+') as destination:
-            print(location)
+        if not path.exists(path.dirname(location)):
+            os.makedirs(path.dirname(location))
+        with open('configuration_files/'+f.name, 'wb+') as destination:
             for chunk in f.chunks():
-                print(chunk)
                 destination.write(chunk)
+        if config_type == 'database':
+            constants.database_url = location+f.name
+        elif config_type == 'manipulator':
+            constants.manipulator_url = location+f.name
         return True
-    except Exception:
+    except EnvironmentError:
         return False
 
 @require_POST
