@@ -5,12 +5,17 @@
 
     <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/css/jquery.dynatable.css"/>
-    <link rel="stylesheet" href="/static/css/bootstrap-switch.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/bootstrap-switch.css"/>
+    <link rel="stylesheet" href="/static/css/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="/static/css/bootstrap-tokenfield.css"/>
 
     <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery-ui.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/bootstrap-switch.js"></script>
     <script src="/static/js/lib/jquery.dynatable.js"></script>
+    <script src="/static/js/lib/bootstrap-tokenfield.js"></script>
+
     <script src="/static/js/plot.js"></script>
 
 </head>
@@ -23,9 +28,7 @@
     </div>
 
     <div class="col-md-6">
-        <div style="border-style: double; padding: 5px" class="col-md-12" id="control-box">
-            <h3>Control Box</h3><br>
-
+        <div style="padding: 5px" class="col-md-12" id="control-box">
             <div id="control-knobs" class="col-md-6">
                 Enable Comparison <input type="checkbox" id="enable-comparison" onchange="enableComparison()">
             </div>
@@ -34,6 +37,9 @@
                 <div class="col-md-12" id="comparison-controls" style="display: none">
                 </div>
             </div>
+        </div>
+        <div style="padding: 5px" class="col-md-12" id="">
+            <input type="text" class="form-control" id="tokenfield" placeholder="Enter flag names" onchange="tokenFieldChange()"/>
         </div>
 
         <div class="col-md-12">

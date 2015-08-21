@@ -28,14 +28,17 @@ def unpickle_data(data):
         pass
     return pickle.loads(data)
 
+
 def get_color_numeric(val, parameter):
     t = parameter.get_unit_value(val) * 255
     return "#%02x%02x%02x" % (t, 255 - t, 0)
+
 
 def get_color_enum(val, parameter):
     t = 255 * (parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options)
     print(t)
     return "#%02x%02x%02x" % (t, 255 - t, 0)
+
 
 def get_data():
     global highlighted_flag
@@ -77,10 +80,13 @@ def get_data():
 
     return data, grouped.get_group(1), colors
 
+
 initialized = False
 
+
 def timestamp(data):
-    return (data - data[0])/1000000000
+    return (data - data[0]) / 1000000000
+
 
 def initialize_plot():
     global p, source, source_best, initialized, cur_session, highlighted_flag, manipulator
@@ -125,7 +131,7 @@ def initialize_plot():
         }
     """)
 
-    source.callback=callback
+    source.callback = callback
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = OrderedDict([
@@ -170,6 +176,24 @@ def update(request):
     return HttpResponse("success")
 
 
+def get_flags(request):
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+    cur.execute(
+        "SELECT configuration.data as conf_data"
+        + " FROM configuration"
+        + " WHERE configuration.id =1"
+    )
+    rows = cur.fetchall()
+    data = [(unpickle_data(d[0])) for d in rows]
+
+    flags = []
+    for key in data[0]:
+        flags.append({'value': key, 'label': key, 'status': 1})
+
+    return HttpResponse(json.dumps(flags), content_type="application/json")
+
+
 def highlight_flag(request):
     global highlighted_flag
     highlighted_flag = request.GET.get('flag', '')
@@ -189,11 +213,11 @@ def config2(request, points_id):
         )
         rows = cur.fetchall()
         data = [(unpickle_data(d[0]), d[1]) for d in rows]
-
+        flags = []
         table_data = []
-
         for key in data[0][0]:
             record = {'name': key}
+            flags.append({'value': key, 'label': key, 'status': 1})
             equal = True
             value = data[0][0][key]
             values = {}
@@ -210,19 +234,19 @@ def config2(request, points_id):
                 if values[data[i][0][key]] > max:
                     max = values[data[i][0][key]]
 
-                #if value == 'default':
-                #    value = data[i][0][key]
-                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                # if value == 'default':
+                # value = data[i][0][key]
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
             record['max_count'] = max
             record['equal'] = equal
             record['value'] = str(values)
-                # if equal:
-                #     record['value'] = value
-                # else:
-                #     record['value'] = 'Unequal'
+            # if equal:
+            # record['value'] = value
+            # else:
+            # record['value'] = 'Unequal'
             table_data.append(record)
 
         def cmp_items(a, b):
@@ -232,12 +256,14 @@ def config2(request, points_id):
                 return 1
             else:
                 return -1 if a['name'] < b['name'] else 1
+
         table_data.sort(cmp_items)
-        if (len(data)<5):
+        if (len(data) < 5):
             columns = [str(data[i][1]) for i in range(len(rows))]
         else:
             columns = ['Value']
-        response_data = {'data': table_data, 'columns': ['Name'] + columns}
+        response_data = {'data': table_data, 'columns': ['Name'] + columns, 'flags': flags}
+        print(flags)
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
