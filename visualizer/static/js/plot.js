@@ -53,10 +53,6 @@ function update_conf_details(obj) {
                     }
                 }).on('click', 'tr', function () {
                     var flag = $(this).children(":first").text();
-                    $.ajax({
-                        type: "GET",
-                        url: '/plot/highlight_flag/?flag=' + flag
-                    });
                     token_field.tokenfield('createToken', {value: flag, label: flag, status: 1});
                 });
             } else {
@@ -141,12 +137,7 @@ function showComparison() {
         dataset: {
             records: first_set
         }
-    }).on('click', 'tr', function () {
-        $.ajax({
-            type: "GET",
-            url: '/plot/highlight_flag/?flag=' + $(this).children(":first").text()
-        });
-    });
+    })
 
     console.log($(this).children(":first").text());
     first_set = null;
@@ -168,7 +159,7 @@ function tokenFieldChange() {
     console.log(flag_status);
     $.ajax({
         type: "GET",
-        url: '/plot/highlight_flag/?flags=' + flag_names + '&status=' + flag_status
+        url: '/plot/highlight_flag/?flags=' + flag_names.substring(0,flag_names.length-1) + '&status=' + flag_status.substring(0,flag_status.length-1)
     });
 
 }
