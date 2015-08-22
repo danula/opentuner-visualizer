@@ -41,7 +41,7 @@ def get_color_enum(val, parameter):
 
 
 def get_data():
-    global highlighted_flag
+    global highlighted_flags
 
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
@@ -63,20 +63,29 @@ def get_data():
 
     grouped = data.groupby('was_new_best')
 
-    if highlighted_flag is None:
+    if highlighted_flags is None:
         colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
     else:
-        parameter = None
-        for par in manipulator.params:
-            if par.name == highlighted_flag:
-                parameter = par
-                break
-        if parameter.is_primitive():
-            colors = [get_color_numeric(unpickle_data(val), parameter) for val in data['conf_data'].values]
-        elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
-            colors = [get_color_enum(unpickle_data(val), parameter) for val in data['conf_data'].values]
-        else:
+        configurations = [unpickle_data(val) for val in data['conf_data'].values]
+        values = [0 for val in configurations]
+        parameter_count = 0
+        for parameter in manipulator.params:
+            if parameter.name in highlighted_flags:
+                if parameter.is_primitive():
+                    values_temp = [parameter.get_unit_value(config) for config in configurations]
+                elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
+                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options) for val in configurations]
+                else:
+                    continue
+                parameter_count = parameter_count + 1
+                if (highlighted_flags[parameter.name] == "1"):
+                    values = [values[i]+values_temp[i] for i in range(len(values))]
+                else:
+                    values = [values[i]+1-values_temp[i] for i in range(len(values))]
+        if parameter_count == 0:
             colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+        else:
+            colors = ["#%02x%02x%02x" % (t*255/parameter_count, 255 - 255*t/parameter_count, 0) for t in values]
 
     return data, grouped.get_group(1), colors
 
@@ -89,11 +98,11 @@ def timestamp(data):
 
 
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session, highlighted_flag, manipulator
+    global p, source, source_best, initialized, cur_session, highlighted_flags, manipulator
     with open(constants.manipulator_url, "r") as f1:
         manipulator = unpickle_data(f1.read())
         print(manipulator)
-    highlighted_flag = None
+    highlighted_flags = None
     initialized = True
     data, best_data, colors = get_data()
     source = ColumnDataSource(data=dict(
@@ -195,9 +204,12 @@ def get_flags(request):
 
 
 def highlight_flag(request):
-    global highlighted_flag
-    highlighted_flag = request.GET.get('flag', '')
-    print(highlighted_flag)
+    global highlighted_flags
+    if request.GET.get('flags', '') == "":
+        highlighted_flags = None
+    else:
+        highlighted_flags = dict(zip(request.GET.get('flags', '').split(","), request.GET.get('status', '').split(",")))
+    print(highlighted_flags)
     update_plot()
     return HttpResponse("success")
 
