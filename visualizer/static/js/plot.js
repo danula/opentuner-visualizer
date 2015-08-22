@@ -61,17 +61,18 @@ function update_conf_details(obj) {
                 });
             } else {
                 if (select_first_set) {
-                    first_set = response.data;
-                    for (var i = 0; i < first_set.length; i++) {
-                        first_set[i].first = first_set[i].value;
-                        delete first_set[i].value;
-                    }
+                    first_set = obj;
+                    //for (var i = 0; i < first_set.length; i++) {
+                    //    first_set[i].first = first_set[i].value;
+                    //    delete first_set[i].value;
+                    //}
                 } else {
-                    second_set = response.data;
-                    for (var i = 0; i < second_set.length; i++) {
-                        second_set[i].second = second_set[i].value;
-                        delete second_set[i].value;
-                    }
+                    second_set = obj;
+                    //for (var i = 0; i < second_set.length; i++) {
+                    //    second_set[i].second = second_set[i].value;
+                    //    delete second_set[i].value;
+                    //}
+
                 }
             }
         }
@@ -129,24 +130,35 @@ function nextSet() {
 
 function showComparison() {
     console.log(second_set);
-    for (var i = 0; i < first_set.length; i++) {
-        for (var j = 0; j < second_set.length; j++) {
-            if (first_set[i].name == second_set[j].name) {
-                first_set[i].second = second_set[j].second
+    console.log(first_set)
+    $.ajax({
+        type: "GET",
+        url: '/plot/config3/' + first_set+"/"+second_set,
+        success: function (response) {
+            console.log(response)
+            update_table_structure(["Name", "First", "Second"]);
+            config_table = jQuery('#configuration-table').dynatable({
+            dataset: {
+                records: response.data
             }
+            }).on('click', 'tr', function () {
+                $.ajax({
+                    type: "GET",
+                    url: '/plot/highlight_flag/?flag=' + $(this).children(":first").text()
+                });
+            });
         }
-    }
-    update_table_structure(["Name", "First", "Second"]);
-    config_table = jQuery('#configuration-table').dynatable({
-        dataset: {
-            records: first_set
-        }
-    }).on('click', 'tr', function () {
-        $.ajax({
-            type: "GET",
-            url: '/plot/highlight_flag/?flag=' + $(this).children(":first").text()
-        });
     });
+
+    //for (var i = 0; i < first_set.length; i++) {
+    //    for (var j = 0; j < second_set.length; j++) {
+    //        if (first_set[i].name == second_set[j].name) {
+    //            first_set[i].second = second_set[j].second
+    //        }
+    //    }
+    //}
+
+
 
     console.log($(this).children(":first").text());
     first_set = null;
