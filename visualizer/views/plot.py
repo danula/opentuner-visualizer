@@ -288,7 +288,7 @@ def getZeroToOneValues(data):
             if p.is_primitive():
                 for i in range(len(data)):
                     data2[i][0][p.name] = p.get_unit_value(data2[i][0])
-                    #for d in data['conf_data']:
+                    # for d in data['conf_data']:
                     #    d[p.name] = p.get_unit_value(d)
             elif isinstance(p, opentuner.search.manipulator.EnumParameter):
                 options = p.options
@@ -299,6 +299,92 @@ def getZeroToOneValues(data):
                         print("Invalid Configuration", p, p.name, data2[i][0])
                         data2[i][0][p.name] = 0
     return data2
+
+
+def config3(request, points_id1,points_id2):
+    with lite.connect(constants.database_url) as con:
+        cur = con.cursor()
+        cur.execute(
+            "SELECT configuration.data as conf_data, configuration.id"
+            + " FROM configuration"
+            + " WHERE configuration.id in (%s)" % points_id1
+        )
+        rows1 = cur.fetchall()
+        data1 = [(unpickle_data(d[0]), d[1]) for d in rows1]
+        cur.execute(
+            "SELECT configuration.data as conf_data, configuration.id"
+            + " FROM configuration"
+            + " WHERE configuration.id in (%s)" % points_id2
+        )
+        rows2 = cur.fetchall()
+        data2 = [(unpickle_data(d[0]), d[1]) for d in rows2]
+
+        data12 = getZeroToOneValues(data1)
+        data22 = getZeroToOneValues(data2)
+
+        table_data = []
+        for key in data1[0][0]:
+            record = {'name': key}
+            data13 = []
+            data23 = []
+            values1 = {}
+            values2 = {}
+            for i in range(len(data1)):
+                if data1[i][0][key] == 'off':
+                    data13.append(1)
+                elif data1[i][0][key] == 'on':
+                    data13.append(0)
+                else:
+                    data13.append(data12[i][0][key])
+
+                if data1[i][0][key] not in values1:
+                    values1[data1[i][0][key]] = 1
+                else:
+                    values1[data1[i][0][key]] += 1
+
+            for i in range(len(data2)):
+                if data2[i][0][key] == 'off':
+                    data23.append(1)
+                elif data2[i][0][key] == 'on':
+                    data23.append(0)
+                else:
+                    data23.append(data22[i][0][key])
+
+                if data2[i][0][key] not in values2:
+                    values2[data2[i][0][key]] = 1
+                else:
+                    values2[data2[i][0][key]] += 1
+
+            a = np.array(data13)
+            record['stdev1'] = np.std(a)
+            b = np.array(data23)
+            record['stdev2'] = np.std(b)
+            record['meandiff'] = abs(np.mean(a)-np.mean(b))
+            record['first'] = str(values1)
+            record['second'] = str(values2)
+            table_data.append(record)
+
+        def cmp_items(a, b):
+            if a['stdev1'] > b['stdev1']:
+                return 1
+            elif a['stdev1'] < b['stdev1']:
+                return -1
+            elif a['stdev2'] > b['stdev2']:
+                return 1
+            elif a['stdev2'] < b['stdev2']:
+                return -1
+            elif a['meandiff'] > b['meandiff']:
+                return 1
+            elif a['meandiff'] < b['meandiff']:
+                return -1
+
+            else:
+                return -1 if a['name'] < b['name'] else 1
+
+        table_data.sort(cmp_items)
+        columns = ['First', 'Second']
+        response_data = {'data': table_data, 'columns': ['Name'] + columns}
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 def config(request, points_id):
@@ -321,19 +407,18 @@ def config(request, points_id):
             equal = True
             value = data[0][0][key]
             values = {}
-            data1=[]
+            data1 = []
             max = 0
             for i in range(len(data)):
                 if (len(data) < 5):
                     record[str(data[i][1])] = data[i][0][key]
 
-                if data[i][0][key]=='off':
+                if data[i][0][key] == 'off':
                     data1.append(1)
-                elif data[i][0][key]=='on':
+                elif data[i][0][key] == 'on':
                     data1.append(0)
                 else:
                     data1.append(data2[i][0][key])
-
 
                 if (data[i][0][key] not in values):
                     values[data[i][0][key]] = 1
@@ -343,7 +428,7 @@ def config(request, points_id):
                 if values[data[i][0][key]] > max:
                     max = values[data[i][0][key]]
 
-                #if value == 'default':
+                # if value == 'default':
                 #    value = data[i][0][key]
                 #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
@@ -364,8 +449,9 @@ def config(request, points_id):
                 return -1
             else:
                 return -1 if a['name'] < b['name'] else 1
+
         table_data.sort(cmp_items)
-        if (len(data)<5):
+        if (len(data) < 5):
             columns = [str(data[i][1]) for i in range(len(rows))]
         else:
             columns = ['Value']
