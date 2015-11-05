@@ -38,7 +38,7 @@ setInterval(function () {
         type: "GET",
         url: '/plot/update/'
     });
-}, 500000);
+}, 50000);
 
 function update_conf_details(obj) {
     $.ajax({
@@ -129,14 +129,14 @@ function showComparison() {
     console.log(first_set)
     $.ajax({
         type: "GET",
-        url: '/plot/config3/' + first_set+"/"+second_set,
+        url: '/plot/config3/' + first_set + "/" + second_set,
         success: function (response) {
             console.log(response)
             update_table_structure(["Name", "First", "Second"]);
             config_table = jQuery('#configuration-table').dynatable({
-            dataset: {
-                records: response.data
-            }
+                dataset: {
+                    records: response.data
+                }
             }).on('click', 'tr', function () {
                 $.ajax({
                     type: "GET",
@@ -145,16 +145,6 @@ function showComparison() {
             });
         }
     });
-
-    //for (var i = 0; i < first_set.length; i++) {
-    //    for (var j = 0; j < second_set.length; j++) {
-    //        if (first_set[i].name == second_set[j].name) {
-    //            first_set[i].second = second_set[j].second
-    //        }
-    //    }
-    //}
-
-
 
     console.log($(this).children(":first").text());
     first_set = null;
@@ -176,7 +166,7 @@ function tokenFieldChange() {
     console.log(flag_status);
     $.ajax({
         type: "GET",
-        url: '/plot/highlight_flag/?flags=' + flag_names.substring(0,flag_names.length-1) + '&status=' + flag_status.substring(0,flag_status.length-1)
+        url: '/plot/highlight_flag/?flags=' + flag_names.substring(0, flag_names.length - 1) + '&status=' + flag_status.substring(0, flag_status.length - 1)
     });
 
 }
@@ -207,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clicked_flag.css("background-color", "rgb(255, 133, 133)");
             var flag_status = clicked_flag.find("span").text().split("(")[0];
             flag_status = flag_status + " (Off)";
-            event.attrs.status = 0
+            event.attrs.status = 0;
             clicked_flag.find("span").text(flag_status);
         }
         //Red to default
@@ -215,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clicked_flag.css("background-color", "rgb(237, 237, 237)");
             var flag_status = clicked_flag.find("span").text().split("(")[0];
             flag_status = flag_status + " (Ignore)";
-            event.attrs.status = -1
+            event.attrs.status = -1;
             clicked_flag.find("span").text(flag_status);
         }
         //Default to green
@@ -223,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clicked_flag.css("background-color", "rgb(133, 255, 133)");
             var flag_status = clicked_flag.find("span").text().split("(")[0];
             flag_status = flag_status + " (On)";
-            event.attrs.status = 1
+            event.attrs.status = 1;
             clicked_flag.find("span").text(flag_status);
         }
         tokenFieldChange();
