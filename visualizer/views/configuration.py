@@ -5,6 +5,7 @@ import pickle
 import zlib
 from copy import deepcopy
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.shortcuts import render_to_response
 
 from opentuner.search.manipulator import EnumParameter, NumericParameter
@@ -51,7 +52,6 @@ def create_form(cfg):
         form.fields[p.name].initial = p._get(cfg)
     return form
 
-
 def index(request, config_id):
     if request.method == 'POST':
         return configuration_edit(request)
@@ -67,6 +67,9 @@ def index(request, config_id):
 def configuration_edit(request):
     data = request.POST.dict()
     cfg = {}
+    is_new_tuning_run = False
+    if data["isNewTuningRun"] == "true":
+        is_new_tuning_run = True
 
     for p in manipulator.params:
         if isinstance(p, NumericParameter):
@@ -74,6 +77,6 @@ def configuration_edit(request):
         elif isinstance(p, EnumParameter):
             cfg[p.name] = data[p.name]
 
-    custom_run(cfg, True)
+    custom_run(cfg, is_new_tuning_run)
     return render_to_response("plot.html")
 
