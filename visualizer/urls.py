@@ -32,5 +32,5 @@ urlpatterns = patterns('',
     url(r'^upload/upload_files/', views.upload.upload_files, name='upload_files'),
     url(r'^upload/$', views.upload.index, name='upload'),
 
-    url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration')
+    url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
 )
