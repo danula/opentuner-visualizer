@@ -50,7 +50,6 @@ def get_configs(data):
         manipulator = unpickle_data(f1.read())
         keys = [0]*len(manipulator.params)
         confs = np.ndarray(shape=(len(data), len(keys)), dtype=float)
-        print (confs.shape)
         for j, p in enumerate(manipulator.params):
             keys[j] = p.name
             if p.is_primitive():
@@ -82,6 +81,8 @@ def initialize_plot():
     confs, keys = get_configs(data)
     TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
             "box_select,lasso_select,poly_select"
+
+    output_server("opentuner3")
     p = figure(
         tools=TOOLS, title="OpenTuner",
         x_axis_label='Time in seconds', y_axis_label='Result Time'
@@ -93,40 +94,37 @@ def initialize_plot():
     print(scores_path)
     print(type(scores_path))
     print("alpha_grid")
-    # print(alpha_grid)
+    print(alpha_grid)
     print(alpha_grid[1:].shape)
     print("scores_path")
     print(scores_path.T[1:].shape)
     print(len(keys))
     print("==========================================================")
+    # import matplotlib.pyplot as plt
+    # plt.plot(alpha_grid[1:] ** .333, scores_path.T[1:], 'r')
+    for i in range(len(keys)):
+        found = False
+        for j in scores_path[i][1:]:
+            if j > 0.05:
+                found = True
+                break
+        if found:
+            print(keys[i])
+            data = ColumnDataSource(data=dict(
+                x=alpha_grid[1:].tolist(),
+                y=scores_path[i][1:],
+                conf_id=keys[i]
+            ))
+            p.line('x', 'y', conf_id='conf_id', line_color="red", source=data, size=5)
 
-    p.multi_line(xs=[alpha_grid[1:].tolist() for i in range(len(keys))], ys=scores_path.T[1:].tolist())
 
-    output_server("opentuner-features")
-
-    # hover = p.select(dict(type=HoverTool))
-    # hover.tooltips = OrderedDict([
-    #     ("Configuration ID", "@x"),
-    #     ("Timestamp", "@keys")
-    # ])
+    hover = p.select(dict(type=HoverTool))
+    hover.tooltips = OrderedDict([
+         ("Configuration ID", "@x"),
+         ("Timestamp", "@conf_id")
+    ])
     show(p)
     cur_session = cursession()
-
-
-def update_plot():
-    global p, source, source_best
-    data, best_data, colors = get_data()
-    source.data['x'] = timestamp(data['timestamp'])
-    source.data['y'] = data['time']
-    source.data['conf_id'] = data['conf_id']
-    source.data['fill_color'] = colors
-
-    source_best.data['x'] = timestamp(best_data['timestamp'])
-    source_best.data['y'] = best_data['time']
-    source_best.data['conf_id'] = best_data['conf_id']
-
-    cur_session.store_objects(source)
-    cur_session.store_objects(source_best)
 
 
 def get_plot_html():
@@ -139,262 +137,3 @@ def index(request):
     if not initialized:
         initialize_plot()
     return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html())})
-
-
-def update(request):
-    update_plot()
-    return HttpResponse("success")
-
-
-def get_flags(request):
-    with lite.connect(constants.database_url) as con:
-        cur = con.cursor()
-    cur.execute(
-        "SELECT configuration.data as conf_data"
-        + " FROM configuration"
-        + " WHERE configuration.id =1"
-    )
-    rows = cur.fetchall()
-    data = [(unpickle_data(d[0])) for d in rows]
-
-    flags = []
-    for key in data[0]:
-        flags.append({'value': key, 'label': key, 'status': 1})
-
-    return HttpResponse(json.dumps(flags), content_type="application/json")
-
-
-def highlight_flag(request):
-    global highlighted_flags
-    if request.GET.get('flags', '') == "":
-        highlighted_flags = None
-    else:
-        highlighted_flags = dict(zip(request.GET.get('flags', '').split(","), request.GET.get('status', '').split(",")))
-    print(highlighted_flags)
-    update_plot()
-    return HttpResponse("success")
-
-
-def config2(request, points_id):
-    print(points_id)
-    with lite.connect(constants.database_url) as con:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT configuration.data as conf_data, configuration.id"
-            + " FROM configuration"
-            + " WHERE configuration.id in (%s)" % points_id
-        )
-        rows = cur.fetchall()
-        data = [(unpickle_data(d[0]), d[1]) for d in rows]
-        flags = []
-        table_data = []
-        for key in data[0][0]:
-            record = {'name': key}
-            flags.append({'value': key, 'label': key, 'status': 1})
-            equal = True
-            value = data[0][0][key]
-            values = {}
-            max = 0
-            for i in range(len(data)):
-                if (len(data) < 5):
-                    record[str(data[i][1])] = data[i][0][key]
-
-                if (data[i][0][key] not in values):
-                    values[data[i][0][key]] = 1
-                else:
-                    values[data[i][0][key]] = values[data[i][0][key]] + 1
-
-                if values[data[i][0][key]] > max:
-                    max = values[data[i][0][key]]
-
-                # if value == 'default':
-                # value = data[i][0][key]
-                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
-                if equal and (data[i][0][key] != value):
-                    equal = False
-
-            record['max_count'] = max
-            record['equal'] = equal
-            record['value'] = str(values)
-            # if equal:
-            # record['value'] = value
-            # else:
-            # record['value'] = 'Unequal'
-            table_data.append(record)
-
-        def cmp_items(a, b):
-            if a['max_count'] > b['max_count']:
-                return -1
-            elif a['max_count'] < b['max_count']:
-                return 1
-            else:
-                return -1 if a['name'] < b['name'] else 1
-
-        table_data.sort(cmp_items)
-        if (len(data) < 5):
-            columns = [str(data[i][1]) for i in range(len(rows))]
-        else:
-            columns = ['Value']
-        response_data = {'data': table_data, 'columns': ['Name'] + columns, 'flags': flags}
-        print(flags)
-
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-def config3(request, points_id1,points_id2):
-    with lite.connect(constants.database_url) as con:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT configuration.data as conf_data, configuration.id"
-            + " FROM configuration"
-            + " WHERE configuration.id in (%s)" % points_id1
-        )
-        rows1 = cur.fetchall()
-        data1 = [(unpickle_data(d[0]), d[1]) for d in rows1]
-        cur.execute(
-            "SELECT configuration.data as conf_data, configuration.id"
-            + " FROM configuration"
-            + " WHERE configuration.id in (%s)" % points_id2
-        )
-        rows2 = cur.fetchall()
-        data2 = [(unpickle_data(d[0]), d[1]) for d in rows2]
-
-        data12 = getZeroToOneValues(deepcopy(data1))
-        data22 = getZeroToOneValues(deepcopy(data2))
-
-        table_data = []
-        for key in data1[0][0]:
-            record = {'name': key}
-            data13 = []
-            data23 = []
-            values1 = {}
-            values2 = {}
-            for i in range(len(data1)):
-                if data1[i][0][key] == 'off':
-                    data13.append(1)
-                elif data1[i][0][key] == 'on':
-                    data13.append(0)
-                else:
-                    data13.append(data12[i][0][key])
-
-                if data1[i][0][key] not in values1:
-                    values1[data1[i][0][key]] = 1
-                else:
-                    values1[data1[i][0][key]] += 1
-
-            for i in range(len(data2)):
-                if data2[i][0][key] == 'off':
-                    data23.append(1)
-                elif data2[i][0][key] == 'on':
-                    data23.append(0)
-                else:
-                    data23.append(data22[i][0][key])
-
-                if data2[i][0][key] not in values2:
-                    values2[data2[i][0][key]] = 1
-                else:
-                    values2[data2[i][0][key]] += 1
-
-            a = np.array(data13)
-            record['stdev1'] = np.std(a)
-            b = np.array(data23)
-            record['stdev2'] = np.std(b)
-            record['meandiff'] = abs(np.mean(a)-np.mean(b))
-            record['first'] = str(values1)
-            record['second'] = str(values2)
-            table_data.append(record)
-
-        def cmp_items(a, b):
-            if a['stdev1'] > b['stdev1']:
-                return 1
-            elif a['stdev1'] < b['stdev1']:
-                return -1
-            elif a['stdev2'] > b['stdev2']:
-                return 1
-            elif a['stdev2'] < b['stdev2']:
-                return -1
-            elif a['meandiff'] > b['meandiff']:
-                return 1
-            elif a['meandiff'] < b['meandiff']:
-                return -1
-
-            else:
-                return -1 if a['name'] < b['name'] else 1
-
-        table_data.sort(cmp_items)
-        columns = ['First', 'Second']
-        response_data = {'data': table_data, 'columns': ['Name'] + columns}
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-
-def config(request, points_id):
-    print(points_id)
-    with lite.connect(constants.database_url) as con:
-        cur = con.cursor()
-        cur.execute(
-            "SELECT configuration.data as conf_data, configuration.id"
-            + " FROM configuration"
-            + " WHERE configuration.id in (%s)" % points_id
-        )
-        rows = cur.fetchall()
-        data = [(unpickle_data(d[0]), d[1]) for d in rows]
-
-        table_data = []
-        data2 = getZeroToOneValues(deepcopy(data))
-
-        for key in data[0][0]:
-            record = {'name': key}
-            equal = True
-            value = data[0][0][key]
-            values = {}
-            data1 = []
-            max = 0
-            for i in range(len(data)):
-                if (len(data) < 5):
-                    record[str(data[i][1])] = data[i][0][key]
-
-                if data[i][0][key] == 'off':
-                    data1.append(1)
-                elif data[i][0][key] == 'on':
-                    data1.append(0)
-                else:
-                    data1.append(data2[i][0][key])
-
-                if (data[i][0][key] not in values):
-                    values[data[i][0][key]] = 1
-                else:
-                    values[data[i][0][key]] = values[data[i][0][key]] + 1
-
-                if values[data[i][0][key]] > max:
-                    max = values[data[i][0][key]]
-
-                # if value == 'default':
-                #    value = data[i][0][key]
-                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
-                if equal and (data[i][0][key] != value):
-                    equal = False
-
-            record['max_count'] = max
-            record['equal'] = equal
-            record['value'] = str(values)
-
-            a = np.array(data1)
-            record['stdev'] = np.std(a)
-            table_data.append(record)
-
-        def cmp_items(a, b):
-            if a['stdev'] > b['stdev']:
-                return 1
-            elif a['stdev'] < b['stdev']:
-                return -1
-            else:
-                return -1 if a['name'] < b['name'] else 1
-
-        table_data.sort(cmp_items)
-        if (len(data) < 5):
-            columns = [str(data[i][1]) for i in range(len(rows))]
-        else:
-            columns = ['Value']
-        response_data = {'data': table_data, 'columns': ['Name'] + columns}
-
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
-
