@@ -87,6 +87,7 @@ def get_data():
                     # values2 = [values[i]+=1 for i in range(len(values))]
                 else:
                     values = [values[i]+1-values_temp[i] for i in range(len(values))]
+        print(parameter_count)
         if parameter_count == 0:
             colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
         else:
