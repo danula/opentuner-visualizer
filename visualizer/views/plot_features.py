@@ -35,7 +35,7 @@ def get_data():
             + " WHERE result.state='OK' AND time < 1000000 "
             # Add this line for JVM
             + " AND result.tuning_run_id=1 "
-            + " ORDER BY collection_date"
+            + " ORDER BY collection_date LIMIT 20"
         )
         rows = cur.fetchall()
 
@@ -80,24 +80,35 @@ def initialize_plot():
     initialized = True
     data = get_data()
     confs, keys = get_configs(data)
-
-    alpha_grid, scores_path = lasso_stability_path(confs, data['time'], random_state=42,
-                                                   eps=0.05)
-    p.multi_line(xs=scores_path, keys=keys)
-
     TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
             "box_select,lasso_select,poly_select"
-    output_server("opentuner-features")
     p = figure(
         tools=TOOLS, title="OpenTuner",
         x_axis_label='Time in seconds', y_axis_label='Result Time'
     )
 
-    hover = p.select(dict(type=HoverTool))
-    hover.tooltips = OrderedDict([
-        ("Configuration ID", "@x"),
-        ("Timestamp", "@keys")
-    ])
+    alpha_grid, scores_path = lasso_stability_path(confs, data['time'], random_state=42, eps=0.05)
+
+    print("==========================================================")
+    print(scores_path)
+    print(type(scores_path))
+    print("alpha_grid")
+    # print(alpha_grid)
+    print(alpha_grid[1:].shape)
+    print("scores_path")
+    print(scores_path.T[1:].shape)
+    print(len(keys))
+    print("==========================================================")
+
+    p.multi_line(xs=[alpha_grid[1:].tolist() for i in range(len(keys))], ys=scores_path.T[1:].tolist())
+
+    output_server("opentuner-features")
+
+    # hover = p.select(dict(type=HoverTool))
+    # hover.tooltips = OrderedDict([
+    #     ("Configuration ID", "@x"),
+    #     ("Timestamp", "@keys")
+    # ])
     show(p)
     cur_session = cursession()
 
