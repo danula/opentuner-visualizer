@@ -53,7 +53,7 @@ def get_data():
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
             + " WHERE result.state='OK' AND time < 1000000 "
             # Add this line for JVM
-            + " AND result.tuning_run_id=1"
+            + " AND result.tuning_run_id=3"
             + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
@@ -68,24 +68,30 @@ def get_data():
     else:
         configurations = [unpickle_data(val) for val in data['conf_data'].values]
         values = [0 for val in configurations]
+        #for uniform colour
+        # values2 = [0 for val in configurations]
         parameter_count = 0
         for parameter in manipulator.params:
             if parameter.name in highlighted_flags:
                 if parameter.is_primitive():
                     values_temp = [parameter.get_unit_value(config) for config in configurations]
+                    # values_temp2 = [parameter.get_unit_value(config) for config in configurations]
                 elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
                     values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options) for val in configurations]
+                    # values_temp = [ parameter.options.index(parameter.get_value(val)) for val in configurations]
                 else:
                     continue
                 parameter_count = parameter_count + 1
                 if (highlighted_flags[parameter.name] == "1"):
                     values = [values[i]+values_temp[i] for i in range(len(values))]
+                    # values2 = [values[i]+=1 for i in range(len(values))]
                 else:
                     values = [values[i]+1-values_temp[i] for i in range(len(values))]
         if parameter_count == 0:
             colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
         else:
             colors = ["#%02x%02x%02x" % (t*255/parameter_count, 255 - 255*t/parameter_count, 0) for t in values]
+            # colors = ["#%02x%02x%02x" % (t, t, t) for t in values2]
 
     return data, grouped.get_group(1), colors
 
@@ -373,9 +379,9 @@ def config3(request, points_id1,points_id2):
                 return 1
             elif a['stdev2'] < b['stdev2']:
                 return -1
-            elif a['meandiff'] > b['meandiff']:
-                return 1
             elif a['meandiff'] < b['meandiff']:
+                return 1
+            elif a['meandiff'] > b['meandiff']:
                 return -1
 
             else:

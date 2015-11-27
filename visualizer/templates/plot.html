@@ -8,13 +8,17 @@
     <link rel="stylesheet" href="/static/css/bootstrap-switch.css"/>
     <link rel="stylesheet" href="/static/css/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/static/css/bootstrap-tokenfield.css"/>
-
+    <link rel="stylesheet" href="/static/css/jquery.range.css">
+    <link rel="stylesheet" href="https://gitcdn.github.io/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css">
+    
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery-ui.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/bootstrap-switch.js"></script>
     <script src="/static/js/lib/jquery.dynatable.js"></script>
     <script src="/static/js/lib/bootstrap-tokenfield.js"></script>
+    <script src="/static/js/lib/jquery.range.js"></script>
 
     <script src="/static/js/plot.js"></script>
 
@@ -45,6 +49,50 @@
         <div class="col-md-12">
             <br><br>
         </div>
+
+        <div class="col-md-12">
+            <div id="custom-param-list">
+                <table id="custom-param-table" class="table">
+                    <tr>
+                        <td>
+                            <input type="checkbox" aria-label="...">
+                        </td>
+                        <td>-ftree</td>
+                        <td>
+                        <div class="btn-group btn-group-xs" role="group" aria-label="...">
+                            <button type="button" class="btn btn-default">on</button>
+                            <button type="button" class="btn btn-danger">off</button>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" aria-label="...">
+                        </td>
+                        <td>-ftree-vet</td>
+                        <td>
+                        <div class="btn-group btn-group-xs" role="group" aria-label="..." style="float: right">
+                            <button type="button" class="btn btn-success">on</button>
+                            <button type="button" class="btn btn-default">off</button>
+                        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" aria-label="...">
+                        </td>
+                        <td>-ftree-vet</td>
+                        <td>
+                            <input type="hidden" class="slider-input" value="23" style="float: right"/>
+                        </td>
+                        </div>
+                    </tr>
+                </tr>
+                </table>
+            </div>
+            TEST
+        </div>
+
         <h3>Configuration Details</h3>
 
         <div id="config-table">
