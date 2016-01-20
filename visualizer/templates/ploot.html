@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <link rel='stylesheet' href='/static/css/bootstrap.min.css' type='text/css' media='all'/>
+    <link rel='stylesheet' href='/static/css/jquery.dynatable.css' type='text/css' media='all'/>
+    <link rel='stylesheet' href='/static/css/bootstrap-switch.css' type='text/css' media='all'/>
+    <link rel='stylesheet' href='/static/css/jquery-ui.min.css' type='text/css' media='all'/>
+    <link rel='stylesheet' href='/static/css/bootstrap-tokenfield.css' type='text/css' media='all'/>
+    <link rel='stylesheet' href='/static/css/style.css@ver=1.0' type='text/css' media='all'/>
+    <link rel='stylesheet' href='/static/css/font-awesome.css@ver=1.0' type='text/css' media='all'/>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<link rel="shortcut icon"-->
+    <!--href=""/>-->
+</head>
+
+<body>
+<div class="nsb">
+
+    <div class="pull-right manin_navi_main">
+
+        <ul class="manin_navi">
+            <div class="click_btn"><a class="click">
+                <img class="dekstop" src="/home/kasun/Desktop/www.nsb.lk/img/nav_icon.png">
+            </a>
+            </div>
+
+            <li class="close_23"><i style="font-size: 30px;" class="fa fa-times"></i></li>
+
+            <li>
+                <div id="right_menu" class="menu-right_menu-container">
+                    <ul id="menu-right_menu" class="menu">
+                        <li id="menu-item-29"
+                            class="menu-item menu-item-type-custom menu-item-object-custom menu-item-29"><a
+                                href="#">Dimension Reduced Plot</a></li>
+                        <li id="menu-item-30"
+                            class="menu-item menu-item-type-custom menu-item-object-custom menu-item-30"><a
+                                href="#">Upload Database</a></li>
+                        <li id="menu-item-31"
+                            class="menu-item menu-item-type-custom menu-item-object-custom menu-item-31"><a
+                                href="#">Edit Configuration</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+
+    </div>
+
+    <section class="online_sec section" id="online">
+        <div class="container">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    {{ script_js }}
+                </div>
+                <div class="col-md-6">
+                    <div style="padding: 5px" class="col-md-12" id="control-box">
+                        <div id="control-knobs" class="col-md-6">
+                            Enable Comparison <input type="checkbox" id="enable-comparison"
+                                                     onchange="enableComparison()">
+                        </div>
+
+                        <div id="control-extend" class="col-md-6">
+                            <div class="col-md-12" id="comparison-controls" style="display: none">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 5px" class="col-md-12" id="">
+                        <input type="text" class="form-control" id="tokenfield" placeholder="Enter flag names"
+                               onchange="tokenFieldChange()"/>
+                    </div>
+
+                    <div class="col-md-12">
+                        <br><br>
+                    </div>
+                    <h3>Configuration Details</h3>
+
+                    <div id="config-table">
+                        <table id="configuration-table" class="table table-bordered">
+                            <thead id="table-headers">
+                            <th>Name</th>
+                            <th>Value</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="nsb foot clearfix" role="contentinfo">
+
+        <div id="inner-footer" class="clearfix">
+            <!-- <hr /> -->
+            <div id="widget-footer" class="clearfix row">
+            </div>
+
+            <div class="container">
+
+                <p> &copy; 2016 OpenTuner Visualizer<span class="pull-right">Solution by <a
+                        href="#">Fiontar</a></span></p>
+
+            </div>
+        </div>
+    </footer>
+</div>
+
+</body>
+
+<script src="/static/js/lib/jquery.min.js"></script>
+<script src="/static/js/lib/jquery-ui.min.js"></script>
+<script src="/static/js/lib/bootstrap.min.js"></script>
+<script src="/static/js/lib/bootstrap-switch.js"></script>
+<script src="/static/js/lib/jquery.dynatable.js"></script>
+<script src="/static/js/lib/bootstrap-tokenfield.js"></script>
+<script src="/static/js/plot.js"></script>
+
+</html>
