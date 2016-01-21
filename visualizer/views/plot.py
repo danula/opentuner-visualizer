@@ -116,7 +116,7 @@ def initialize_plot():
     output_server("opentuner2")
     p = figure(
         tools=TOOLS, title="OpenTuner",
-        x_axis_label='Time in seconds', y_axis_label='Result Time'
+        x_axis_label='OpenTuner Timestamp', y_axis_label='Execution Time (Sec)'
     )
 
     p.circle('x', 'y', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)

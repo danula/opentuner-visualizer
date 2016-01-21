@@ -55,9 +55,9 @@ nav {
   background: rgba(41,128,185,1);
   padding-right: .25em;
   position: absolute;
-  left: -18em;
+  left: 89.8em;
   top: 0;
-  padding-top: 5em;
+  padding-top: 1em;
   box-sizing: border-box;
   z-index: 100;
   height: 100%;
@@ -66,16 +66,21 @@ nav {
   transition: all .3s;
 }
 
-nav.active { left: 0; }
+nav.active { left: 78em; }
 
 #mobile-nav {
   background: url(menu-icon.png);
   color: rgba(255,255,255,.8);
   cursor: pointer;
-  left: 2em;
+  left: 91em;
   height: 30px;
   position: absolute;
   top: 2em;
   width: 30px;
   z-index: 110;
+}
+
+.data-table{
+    padding-right: 0;
+    width: 45%;
 }
