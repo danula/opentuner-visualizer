@@ -3,3 +3,17 @@ plot.html
 .idea/
 constants.py
 ~
+*~
+
+.ipynb_checkpoints/
+*.ipynb
+
+configuration_files/*
+
+*.out
+
+*.sqlite3
+
+*.cpp
+
+params*
