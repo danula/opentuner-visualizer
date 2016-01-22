@@ -35,7 +35,7 @@ def get_data():
             + " WHERE result.state='OK' AND time < 1000000 "
             # Add this line for JVM
             + " AND result.tuning_run_id=1 "
-            + " ORDER BY collection_date LIMIT 20"
+            + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
 
@@ -85,7 +85,7 @@ def initialize_plot():
     output_server("opentuner3")
     p = figure(
         tools=TOOLS, title="OpenTuner",
-        x_axis_label='Time in seconds', y_axis_label='Result Time'
+        x_axis_label='Square(alpha/alpha_max)', y_axis_label='Stability score'
     )
 
     alpha_grid, scores_path = lasso_stability_path(confs, data['time'], random_state=42, eps=0.05)
@@ -104,18 +104,13 @@ def initialize_plot():
     # plt.plot(alpha_grid[1:] ** .333, scores_path.T[1:], 'r')
     for i in range(len(keys)):
         found = False
-        for j in scores_path[i][1:]:
-            if j > 0.05:
-                found = True
-                break
-        if found:
-            print(keys[i])
-            data = ColumnDataSource(data=dict(
-                x=alpha_grid[1:].tolist(),
-                y=scores_path[i][1:],
-                conf_id=keys[i]
-            ))
-            p.line('x', 'y', conf_id='conf_id', line_color="red", source=data, size=5)
+        print(keys[i])
+        data = ColumnDataSource(data=dict(
+            x=((alpha_grid[1:])**2.00).tolist(),
+            y=scores_path[i][1:],
+            conf_id=keys[i]
+        ))
+        p.line('x', 'y', conf_id='conf_id', line_color="red", source=data, size=5)
 
 
     hover = p.select(dict(type=HoverTool))

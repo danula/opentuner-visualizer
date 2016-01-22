@@ -31,6 +31,17 @@ $(document).ready(function () {
         }
     });
 
+    $('.slider-input').jRange({
+    from: 0,
+    to: 100,
+    step: 1,
+    scale: [0,100],
+    format: '%s',
+    width: 300,
+    showLabels: true,
+    isRange : true
+    });
+
 });
 
 setInterval(function () {
@@ -168,7 +179,29 @@ function tokenFieldChange() {
         type: "GET",
         url: '/plot/highlight_flag/?flags=' + flag_names.substring(0, flag_names.length - 1) + '&status=' + flag_status.substring(0, flag_status.length - 1)
     });
+    update_table2(selected_flags);
+}
 
+function update_table2(selected_flags){
+    var table_html_start = "<table id='custom-param-table' class='table'>";
+    var table_html_end = "</table>";
+    var table_html_body = "";
+    $.each(selected_flags, function (index) {
+        table_html_body += "<tr><td><input type='checkbox' aria-label='...'></td><td>" + selected_flags[index].value + "</td><td><div class='btn-group btn-group-xs' role='group' aria-label='...' style='float: right'>";
+        if(selected_flags[index].status==1){
+            table_html_body += "<button type='button' class='btn btn-success'>on</button>"+
+                            "<button type='button' class='btn btn-default'>off</button></tr>";
+        }else if(selected_flags[index].status==0){
+            table_html_body += "<button type='button' class='btn btn-default'>on</button>"+
+                            "<button type='button' class='btn btn-danger'>off</button></tr>";
+        }else{
+            table_html_body += "<button type='button' class='btn btn-default'>on</button>"+
+                            "<button type='button' class='btn btn-default'>off</button></tr>";
+        }
+        table_html_body += "</tr>";
+    });
+
+    jQuery("#custom-param-list").html(table_html_start + table_html_body + table_html_end);
 }
 
 document.addEventListener('DOMContentLoaded', function () {

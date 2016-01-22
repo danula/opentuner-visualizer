@@ -7,7 +7,7 @@
   margin: auto;
   /*outline: 1px solid red;*/
   padding-left: 0;
-  width: 15em;
+  width: 30em;
 }
 
 .menu a {
@@ -16,12 +16,12 @@
   text-decoration: none;
   text-transform: uppercase;
   display: block;
-  padding-left: 3em;
+  padding-left: 4em;
   width: 100%;
 }
 
 .menu a:hover {
-  margin-left: 1em;
+  margin-left: 5px;
   -webkit-transition: all .5s;
   -o-transition: all .5s;
   transition: all .5s;
@@ -36,7 +36,7 @@
   transition: all .5s;/*outline: 1px solid green*/
 }
 
-.menu li:hover { box-shadow: 15em 0 rgba(52,152,219,.2)inset; }
+.menu li:hover { box-shadow: 30em 0 rgba(52,152,219,.2)inset; }
 
 .menu li:nth-child(2) a { background-position: 0 -42px; }
 
@@ -55,7 +55,7 @@ nav {
   background: rgba(41,128,185,1);
   padding-right: .25em;
   position: absolute;
-  left: 89.8em;
+  left: 96.6%;
   top: 0;
   padding-top: 1em;
   box-sizing: border-box;
@@ -66,7 +66,7 @@ nav {
   transition: all .3s;
 }
 
-nav.active { left: 78em; }
+nav.active { left: 78px; }
 
 #mobile-nav {
   background: url(menu-icon.png);
