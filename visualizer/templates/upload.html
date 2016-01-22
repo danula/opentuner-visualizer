@@ -17,7 +17,7 @@
         }
 
         $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
+            beforeSend: function (xhr, settings) {
                 if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 }
@@ -30,24 +30,31 @@
     <div class="section">
         <div class="container">
             <h1>Upload Files</h1>
+
             <div class="row">
                 <div class="col-md-6 col-md-offset-3">
                     <div class="form-wrap">
                         <div class="form-group">
                             <label class="control-label">Database</label>
-                            <input id="database" name="database" type="file" class="file" multiple="false" data-show-upload="false" data-show-caption="true">
+                            <input id="database" name="database" type="file" class="file" multiple="false"
+                                   data-show-upload="false" data-show-caption="true">
                         </div>
-                        <br/><hr/><br/>
+                        <br/>
+                        <hr/>
+                        <br/>
+
                         <div class="form-group">
                             <label class="control-label">Manipulator</label>
-                            <input id="manipulator" name="manipulator" type="file" class="file" multiple="false" data-show-upload="false" data-show-caption="true">
+                            <input id="manipulator" name="manipulator" type="file" class="file" multiple="false"
+                                   data-show-upload="false" data-show-caption="true">
                         </div>
                     </div>
                     <br/>
+
                     <div class="form-group">
                         <button class="btn btn-primary" type="button" onclick="uploadFiles()">Upload</button>
                     </div>
-    		    </div>
+                </div>
             </div>
         </div>
     </div>
