@@ -19,15 +19,7 @@ from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
 from copy import deepcopy
-
-
-def unpickle_data(data):
-    try:
-        data = zlib.decompress(data)
-    except:
-        pass
-    return pickle.loads(data)
-
+from visualizer.utils import unpickle_data, getZeroToOneValues
 
 def get_color_numeric(val, parameter):
     t = parameter.get_unit_value(val) * 255
@@ -124,7 +116,7 @@ def initialize_plot():
     output_server("opentuner2")
     p = figure(
         tools=TOOLS, title="OpenTuner",
-        x_axis_label='Time in seconds', y_axis_label='Result Time'
+        x_axis_label='OpenTuner Timestamp', y_axis_label='Execution Time (Sec)'
     )
 
     p.circle('x', 'y', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
@@ -280,28 +272,6 @@ def config2(request, points_id):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-
-def getZeroToOneValues(data):
-    data2 = deepcopy(data)
-    with open(constants.manipulator_url, "r") as f1:
-        manipulator = unpickle_data(f1.read())
-        for p in manipulator.params:
-            if p.is_primitive():
-                for i in range(len(data)):
-                    data2[i][0][p.name] = p.get_unit_value(data2[i][0])
-                    # for d in data['conf_data']:
-                    #    d[p.name] = p.get_unit_value(d)
-            elif isinstance(p, opentuner.search.manipulator.EnumParameter):
-                options = p.options
-                for i in range(len(data)):
-                    try:
-                        data2[i][0][p.name] = (options.index(p.get_value(data2[i][0])) + 0.4999) / len(options)
-                    except:
-                        print("Invalid Configuration", p, p.name, data2[i][0])
-                        data2[i][0][p.name] = 0
-    return data2
-
-
 def config3(request, points_id1,points_id2):
     with lite.connect(constants.database_url) as con:
         cur = con.cursor()
@@ -320,8 +290,8 @@ def config3(request, points_id1,points_id2):
         rows2 = cur.fetchall()
         data2 = [(unpickle_data(d[0]), d[1]) for d in rows2]
 
-        data12 = getZeroToOneValues(data1)
-        data22 = getZeroToOneValues(data2)
+        data12 = getZeroToOneValues(deepcopy(data1))
+        data22 = getZeroToOneValues(deepcopy(data2))
 
         table_data = []
         for key in data1[0][0]:
@@ -401,7 +371,7 @@ def config(request, points_id):
         data = [(unpickle_data(d[0]), d[1]) for d in rows]
 
         table_data = []
-        data2 = getZeroToOneValues(data)
+        data2 = getZeroToOneValues(deepcopy(data))
 
         for key in data[0][0]:
             record = {'name': key}

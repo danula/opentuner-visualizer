@@ -3,6 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 import views.plot
 import views.plot2
+import views.plot_features
 import views.upload
 import views.configuration
 
@@ -28,9 +29,12 @@ urlpatterns = patterns('',
     url(r'^plot2/update/', views.plot2.update, name='plot_update'),
     url(r'^plot2/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot2.config, name='detail'),
 
+
+    url(r'^plot3/$', views.plot_features.index, name='plot3'),
+
     url(r'^upload/index/', views.upload.index, name='upload'),
     url(r'^upload/upload_files/', views.upload.upload_files, name='upload_files'),
     url(r'^upload/$', views.upload.index, name='upload'),
 
-    url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration')
+    url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
 )
