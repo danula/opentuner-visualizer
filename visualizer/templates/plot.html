@@ -1,5 +1,20 @@
-
 {% extends 'base.html' %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/jquery.dynatable.css"/>
+    <link rel="stylesheet" href="/static/css/bootstrap-switch.css"/>
+    <link rel="stylesheet" href="/static/css/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="/static/css/bootstrap-tokenfield.css"/>
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/lib/jquery-ui.min.js"></script>
+    <script src="/static/js/lib/bootstrap-switch.js"></script>
+    <script src="/static/js/lib/jquery.dynatable.js"></script>
+    <script src="/static/js/lib/bootstrap-tokenfield.js"></script>
+    <script src="/static/js/plot.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-6">

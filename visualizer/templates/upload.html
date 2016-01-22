@@ -1,33 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
+{% extends 'base.html' %}
 
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
+{% block styles %}
     <link rel="stylesheet" href="/static/css/fileinput.min.css">
+{% endblock %}
 
-    <script src="/static/js/lib/jquery.min.js"></script>
-    <script src="/static/js/lib/bootstrap.min.js"></script>
+{% block scripts %}
     <script src="/static/js/lib/jquery.cookie.js"></script>
     <script src="/static/js/lib/fileinput.min.js"></script>
     <script src="/static/js/upload.js"></script>
-</head>
-<body>
-<script>
-var csrftoken = jQuery.cookie('csrftoken');
-function csrfSafeMethod(method) {
-    // these HTTP methods do not require CSRF protection
-    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-}
 
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+    <script>
+        var csrftoken = jQuery.cookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
         }
-    }
-});
-</script>
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
     <div class="section">
         <div class="container">
             <h1>Upload Files</h1>
@@ -52,5 +51,4 @@ $.ajaxSetup({
             </div>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}
