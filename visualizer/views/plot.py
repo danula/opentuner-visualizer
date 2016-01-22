@@ -70,9 +70,9 @@ def get_data():
                 else:
                     continue
                 parameter_count = parameter_count + 1
-                if (highlighted_flags[parameter.name] == "1"):
+                if highlighted_flags[parameter.name] == "ON":
                     values = [values[i]+values_temp[i] for i in range(len(values))]
-                else:
+                elif highlighted_flags[parameter.name] == "OFF":
                     values = [values[i]+1-values_temp[i] for i in range(len(values))]
         print(parameter_count)
         if parameter_count == 0:

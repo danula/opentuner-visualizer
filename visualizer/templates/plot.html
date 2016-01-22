@@ -1,12 +1,12 @@
 
 {% extends 'base.html' %}
 {% block content %}
-<div class="row">
+<div class="row right-column">
     <div class="col-md-6">
         {{ script_js }}
     </div>
 
-    <div class="col-md-5 data-table">
+    <div class="col-md-5 config-data-table">
         <div style="padding: 5px" class="col-md-12" id="control-box">
             <div id="control-knobs" class="col-md-6">
                 Enable Comparison <input type="checkbox" id="enable-comparison" onchange="enableComparison()">
@@ -28,43 +28,9 @@
         <div class="col-md-12">
             <div id="custom-param-list">
                 <table id="custom-param-table" class="table">
-                    <tr>
-                        <td>
-                            <input type="checkbox" aria-label="...">
-                        </td>
-                        <td>-ftree</td>
-                        <td>
-                        <div class="btn-group btn-group-xs" role="group" aria-label="...">
-                            <button type="button" class="btn btn-default">on</button>
-                            <button type="button" class="btn btn-danger">off</button>
-                        </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="checkbox" aria-label="...">
-                        </td>
-                        <td>-ftree-vet</td>
-                        <td>
-                        <div class="btn-group btn-group-xs" role="group" aria-label="..." style="float: right">
-                            <button type="button" class="btn btn-success">on</button>
-                            <button type="button" class="btn btn-default">off</button>
-                        </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="checkbox" aria-label="...">
-                        </td>
-                        <td>-ftree-vet</td>
-                        <td>
-                            <input type="hidden" class="slider-input" value="23" style="float: right"/>
-                        </td>
-                    </tr>
-                </tr>
+
                 </table>
             </div>
-            TEST
         </div>
 
         <h3>Configuration Details</h3>

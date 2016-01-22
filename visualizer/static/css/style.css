@@ -66,7 +66,7 @@ nav {
   transition: all .3s;
 }
 
-nav.active { left: 78px; }
+nav.active { left: 77%; }
 
 #mobile-nav {
   background: url(menu-icon.png);
@@ -80,7 +80,7 @@ nav.active { left: 78px; }
   z-index: 110;
 }
 
-.data-table{
+.config-data-table{
     padding-right: 0;
     width: 45%;
 }

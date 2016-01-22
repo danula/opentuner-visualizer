@@ -32,14 +32,14 @@ $(document).ready(function () {
     });
 
     $('.slider-input').jRange({
-    from: 0,
-    to: 100,
-    step: 1,
-    scale: [0,100],
-    format: '%s',
-    width: 300,
-    showLabels: true,
-    isRange : true
+        from: 0,
+        to: 100,
+        step: 1,
+        scale: [0, 100],
+        format: '%s',
+        width: 300,
+        showLabels: true,
+        isRange: true
     });
 
 });
@@ -64,7 +64,9 @@ function update_conf_details(obj) {
                     }
                 }).on('click', 'tr', function () {
                     var flag = $(this).children(":first").text();
-                    token_field.tokenfield('createToken', {value: flag, label: flag, status: 1});
+                    var status = $($(this).children()[1]).text().toUpperCase();
+
+                    token_field.tokenfield('createToken', {value: flag, label: flag, status: "ON"});
                 });
             } else {
                 if (select_first_set) {
@@ -94,7 +96,7 @@ function update_table_structure(columns) {
     for (var i = 0; i < columns.length; ++i) {
         table_html_body += "<th>" + columns[i] + "</th>";
     }
-
+    $("nav").css("height", $(".right-column").height() + "px");
     jQuery("#config-table").html(table_html_start + table_html_body + table_html_end);
 }
 
@@ -137,12 +139,12 @@ function nextSet() {
 
 function showComparison() {
     console.log(second_set);
-    console.log(first_set)
+    console.log(first_set);
     $.ajax({
         type: "GET",
         url: '/plot/config3/' + first_set + "/" + second_set,
         success: function (response) {
-            console.log(response)
+            console.log(response);
             update_table_structure(["Name", "First", "Second"]);
             config_table = jQuery('#configuration-table').dynatable({
                 dataset: {
@@ -167,45 +169,145 @@ function tokenFieldChange() {
     var selected_flags = token_field.tokenfield('getTokens');
     var flag_names = "";
     var flag_status = "";
+
+
     $.each(selected_flags, function (index) {
-        if (selected_flags[index].status != -1) {
+        if (selected_flags[index].status != "IGN") {
             flag_names = flag_names + selected_flags[index].value + ",";
             flag_status = flag_status + selected_flags[index].status + ",";
+            console.log(flag_names);
+            console.log(flag_status);
         }
     });
-    console.log(flag_names);
-    console.log(flag_status);
+    update_table2(selected_flags);
     $.ajax({
         type: "GET",
         url: '/plot/highlight_flag/?flags=' + flag_names.substring(0, flag_names.length - 1) + '&status=' + flag_status.substring(0, flag_status.length - 1)
     });
-    update_table2(selected_flags);
 }
 
-function update_table2(selected_flags){
+function update_table2(selected_flags) {
     var table_html_start = "<table id='custom-param-table' class='table'>";
     var table_html_end = "</table>";
     var table_html_body = "";
     $.each(selected_flags, function (index) {
-        table_html_body += "<tr><td><input type='checkbox' aria-label='...'></td><td>" + selected_flags[index].value + "</td><td><div class='btn-group btn-group-xs' role='group' aria-label='...' style='float: right'>";
-        if(selected_flags[index].status==1){
-            table_html_body += "<button type='button' class='btn btn-success'>on</button>"+
-                            "<button type='button' class='btn btn-default'>off</button></tr>";
-        }else if(selected_flags[index].status==0){
-            table_html_body += "<button type='button' class='btn btn-default'>on</button>"+
-                            "<button type='button' class='btn btn-danger'>off</button></tr>";
-        }else{
-            table_html_body += "<button type='button' class='btn btn-default'>on</button>"+
-                            "<button type='button' class='btn btn-default'>off</button></tr>";
+        var checkbox;
+        if (selected_flags[index].status != "IGN")
+            checkbox = "checked";
+
+        table_html_body += "<tr><td><input type='checkbox' " + checkbox + " aria-label='...' onchange=\"ignoreFlag(this,'" +
+        selected_flags[index].value + "')\">" +
+        "</td><td>" + selected_flags[index].value + "</td><td>" +
+        "<div class='btn-group btn-group-xs' role='group' aria-label='...' style='float: right'>";
+
+        if (selected_flags[index].status == "OFF") {
+            table_html_body += "<button type='button' class='btn btn-default' onclick=\"onFlag(this,'" +
+            selected_flags[index].value + "')\">" + "on</button>" +
+            "<button type='button' class='btn btn-danger' onclick=\"offFlag(this,'" +
+            selected_flags[index].value + "')\">" + "off</button></div></td>";
+        } else if (selected_flags[index].status == "IGN") {
+            table_html_body += "<button type='button' class='btn btn-default' onclick=\"onFlag(this,'" +
+            selected_flags[index].value + "')\">" + "on</button>" +
+            "<button type='button' class='btn btn-default' onclick=\"offFlag(this,'" +
+            selected_flags[index].value + "')\">" + "off</button></div></td>";
+        } else {
+            table_html_body += "<button type='button' class='btn btn-success' onclick=\"onFlag(this,'" +
+            selected_flags[index].value + "')\">" + "on</button>" +
+            "<button type='button' class='btn btn-default' onclick=\"offFlag(this,'" +
+            selected_flags[index].value + "')\">" + "off</button></div></td>";
         }
         table_html_body += "</tr>";
     });
-
     jQuery("#custom-param-list").html(table_html_start + table_html_body + table_html_end);
+}
+
+function onFlag(element, flagName) {
+    var token_flags = token_field.tokenfield('getTokens');
+    var node;
+
+    $.each(token_flags, function (index) {
+        if (token_flags[index].value == flagName) {
+            node = $(token_flags[index]);
+            token_flags[index].status = "ON";
+            node = $("span.token-label:contains(" + flagName + ")");
+            console.log(node);
+            console.log(node.parent());
+            node.parent().css("background-color", "rgb(133, 255, 133)");
+            var flag_status = node.text().split("(")[0];
+            flag_status = flag_status + " (On)";
+            node.text(flag_status);
+        }
+    });
+
+    $(element).addClass('btn-success');
+    $(element).siblings().removeClass('btn-danger');
+    tokenFieldChange();
+}
+
+function offFlag(element, flagName) {
+    var token_flags = token_field.tokenfield('getTokens');
+    var node;
+
+    $.each(token_flags, function (index) {
+        if (token_flags[index].value == flagName) {
+            node = $(token_flags[index]);
+            token_flags[index].status = "OFF";
+            node = $("span.token-label:contains(" + flagName + ")");
+            console.log(node);
+            console.log(node.parent());
+            node.parent().css("background-color", "rgb(255, 133, 133)");
+            var flag_status = node.text().split("(")[0];
+            flag_status = flag_status + " (Off)";
+            node.text(flag_status);
+        }
+    });
+
+    $(element).addClass('btn-danger');
+    $(element).siblings().removeClass('btn-success');
+    tokenFieldChange();
+}
+
+function ignoreFlag(element, flagName) {
+    var token_flags = token_field.tokenfield('getTokens');
+    var node;
+
+    if ($(element).prop('checked') == false) {
+        $.each(token_flags, function (index) {
+            if (token_flags[index].value == flagName) {
+                node = $(token_flags[index]);
+                token_flags[index].status = "IGN";
+                node = $("span.token-label:contains(" + flagName + ")");
+                console.log(node);
+                console.log(node.parent());
+                node.parent().css("background-color", "rgb(237, 237, 237)");
+                var flag_status = node.text().split("(")[0];
+                flag_status = flag_status + " (Ignore)";
+                node.text(flag_status);
+            }
+        });
+    } else {
+        $.each(token_flags, function (index) {
+            if (token_flags[index].value == flagName) {
+                node = $(token_flags[index]);
+                token_flags[index].status = "ON";
+                node = $("span.token-label:contains(" + flagName + ")");
+                console.log(node);
+                console.log(node.parent());
+                node.parent().css("background-color", "rgb(133, 255, 133)");
+                var flag_status = node.text().split("(")[0];
+                flag_status = flag_status + " (On)";
+                node.text(flag_status);
+            }
+        });
+    }
+
+    tokenFieldChange();
 }
 
 document.addEventListener('DOMContentLoaded', function () {
     token_field.on('tokenfield:createtoken', function (event) {
+        if ($(".right-column").height() > 600)
+            $("nav").css("height", $(".right-column").height() + "px");
         var existingTokens = jQuery(this).tokenfield('getTokens');
         $.each(existingTokens, function (index, token) {
             if (token.value === event.attrs.value)
@@ -214,6 +316,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     token_field.on('tokenfield:createdtoken', function (event) {
+        if ($(".right-column").height() > 600)
+            $("nav").css("height", $(".right-column").height() + "px");
         clicked_flag = $(event.relatedTarget);
         clicked_flag.css("background-color", "#85FF85");
         var flag_status = clicked_flag.find("span").text().split("(")[0];
@@ -222,6 +326,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     token_field.on('tokenfield:edittoken', function (event) {
+        if ($(".right-column").height() > 600)
+            $("nav").css("height", $(".right-column").height() + "px");
         event.preventDefault();
         clicked_flag = $(event.relatedTarget);
 
@@ -230,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clicked_flag.css("background-color", "rgb(255, 133, 133)");
             var flag_status = clicked_flag.find("span").text().split("(")[0];
             flag_status = flag_status + " (Off)";
-            event.attrs.status = 0;
+            event.attrs.status = "OFF";
             clicked_flag.find("span").text(flag_status);
         }
         //Red to default
@@ -238,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clicked_flag.css("background-color", "rgb(237, 237, 237)");
             var flag_status = clicked_flag.find("span").text().split("(")[0];
             flag_status = flag_status + " (Ignore)";
-            event.attrs.status = -1;
+            event.attrs.status = "IGN";
             clicked_flag.find("span").text(flag_status);
         }
         //Default to green
@@ -246,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
             clicked_flag.css("background-color", "rgb(133, 255, 133)");
             var flag_status = clicked_flag.find("span").text().split("(")[0];
             flag_status = flag_status + " (On)";
-            event.attrs.status = 1;
+            event.attrs.status = "ON";
             clicked_flag.find("span").text(flag_status);
         }
         tokenFieldChange();
