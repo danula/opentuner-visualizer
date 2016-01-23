@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-
+{% load staticfiles %}
 {% block styles %}
-    <link rel="stylesheet" href="/static/css/fileinput.min.css">
+    <link rel="stylesheet" href="{% static 'css/fileinput.min.css' %}">
 {% endblock %}
 
 {% block scripts %}
-    <script src="/static/js/lib/jquery.cookie.js"></script>
-    <script src="/static/js/lib/fileinput.min.js"></script>
-    <script src="/static/js/upload.js"></script>
+    <script src="{% static 'js/lib/jquery.cookie.js' %}"></script>
+    <script src="{% static 'js/lib/fileinput.min.js' %}/"></script>
+    <script src="{% static 'js/upload.js' %}"></script>
 
     <script>
         var csrftoken = jQuery.cookie('csrftoken');

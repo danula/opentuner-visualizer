@@ -6,6 +6,7 @@ import views.plot2
 import views.plot_features
 import views.upload
 import views.configuration
+import views.analysis
 
 admin.autodiscover()
 
@@ -37,4 +38,8 @@ urlpatterns = patterns('',
     url(r'^upload/$', views.upload.index, name='upload'),
 
     url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
+
+    url(r'^analysis/$', views.analysis.create, name='analysis_create'),
+    url(r'^analysis/process$', views.analysis.store, name='analysis_store')
+
 )
