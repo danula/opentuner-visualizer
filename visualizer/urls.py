@@ -24,9 +24,9 @@ urlpatterns = patterns('',
     url(r'^plot/highlight_flag/', views.plot.highlight_flag, name='highlight_flag'),
     url(r'^plot/get_flags/', views.plot.get_flags, name='get_flags'),
 
-    url(r'^plot2/$', views.plot2.index, name='plot'),
-    url(r'^plot2/index/', views.plot2.index, name='plot'),
-    url(r'^plot2/update/', views.plot2.update, name='plot_update'),
+    url(r'^plot2/$', views.plot2.index, name='plot2'),
+    url(r'^plot2/index/', views.plot2.index, name='plot2'),
+    url(r'^plot2/update/', views.plot2.update, name='plot2_update'),
     url(r'^plot2/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot2.config, name='detail'),
 
 

@@ -1,5 +1,21 @@
-
 {% extends 'base.html' %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/jquery.dynatable.css"/>
+    <link rel="stylesheet" href="/static/css/bootstrap-switch.css"/>
+    <link rel="stylesheet" href="/static/css/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="/static/css/bootstrap-tokenfield.css"/>
+    <link rel="stylesheet" href="/static/css/style.css"/>
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/lib/jquery-ui.min.js"></script>
+    <script src="/static/js/lib/bootstrap-switch.js"></script>
+    <script src="/static/js/lib/jquery.dynatable.js"></script>
+    <script src="/static/js/lib/bootstrap-tokenfield.js"></script>
+    <script src="/static/js/plot.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="row right-column">
     <div class="col-md-6">
@@ -12,18 +28,19 @@
                 Enable Comparison <input type="checkbox" id="enable-comparison" onchange="enableComparison()">
             </div>
 
-            <div id="control-extend" class="col-md-6">
-                <div class="col-md-12" id="comparison-controls" style="display: none">
+                <div id="control-extend" class="col-md-6">
+                    <div class="col-md-12" id="comparison-controls" style="display: none">
+                    </div>
                 </div>
             </div>
-        </div>
-        <div style="padding: 5px" class="col-md-12" id="">
-            <input type="text" class="form-control" id="tokenfield" placeholder="Enter flag names" onchange="tokenFieldChange()"/>
-        </div>
+            <div style="padding: 5px" class="col-md-12" id="">
+                <input type="text" class="form-control" id="tokenfield" placeholder="Enter flag names"
+                       onchange="tokenFieldChange()"/>
+            </div>
 
-        <div class="col-md-12">
-            <br><br>
-        </div>
+            <div class="col-md-12">
+                <br><br>
+            </div>
 
         <div class="col-md-12">
             <div id="custom-param-list">
@@ -33,29 +50,29 @@
             </div>
         </div>
 
-        <h3>Configuration Details</h3>
+            <h3>Configuration Details</h3>
 
-        <div id="config-table">
-            <table id="configuration-table" class="table table-bordered">
-                <thead id="table-headers">
-                <th>Name</th>
-                <th>Value</th>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+            <div id="config-table">
+                <table id="configuration-table" class="table table-bordered">
+                    <thead id="table-headers">
+                    <th>Name</th>
+                    <th>Value</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block customscripts %}
-<script type="text/javascript">
-    $('nav').hover(function (event) {
-        $('nav').toggleClass('active');
-    });
-    $('').click(function (event) {
-        $('nav').toggleClass('active');
-    });
-</script>
+    <script>
+        $('nav').hover(function (event) {
+            $('nav').toggleClass('active');
+        });
+        $('').click(function (event) {
+            $('nav').toggleClass('active');
+        });
+    </script>
 {% endblock %}
