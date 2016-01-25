@@ -19,3 +19,7 @@ configuration_files/*
 params*
 
 visualizer/migrations/
+
+databases/
+
+tuning_data/
