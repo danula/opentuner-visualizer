@@ -17,3 +17,5 @@ configuration_files/*
 *.cpp
 
 params*
+
+visualizer/migrations/
