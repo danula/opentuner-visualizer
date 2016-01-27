@@ -1,14 +1,68 @@
-from django.shortcuts import render
-from django.views.decorators.http import require_POST
+from django.http.response import HttpResponseRedirect
 
+from django import forms
+from django.forms import ModelForm
+from django.shortcuts import render
+from django.views.decorators.http import require_POST, require_GET
+
+from visualizer.models import Project, Analysis
 
 __author__ = 'madawa'
 
 
+class CustomUserChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.get_name()
+
+
+class AnalysisForm(ModelForm):
+    name = forms.CharField()
+    project = CustomUserChoiceField(queryset=Project.objects.all())
+    method = forms.ChoiceField(choices=(
+        ('remove_param', 'Remove Parameters'), ('compare_bin', 'Compare Binaries'), ('random_forest', 'Random Forest'),
+        ('relief', 'Relief')))
+
+    class Meta:
+        model = Analysis
+        exclude = ['result_doc']
+
+
+@require_GET
 def create(request):
-    return render(request, 'analysis.html')
+    """
+    Creates the Analysis creation form
+    :param request: GET request from the web application
+    :return: Analysis creation form
+    """
+    form = AnalysisForm()
+    return render(request, 'analysis_create.html', {'form': form})
 
 
 @require_POST
 def store(request):
-    return request
+    """
+    Stores the Analysis in the database
+    :param request: POST request from the form
+    :return: redirect to the project view
+    """
+    new_analysis = AnalysisForm(request.POST).save()
+    project = new_analysis.project
+    redirect_url = 'project/' + str(project.pk)
+
+    return HttpResponseRedirect(redirect_url)
+
+
+@require_GET
+def destroy(request, analysis_id):
+    analysis = Analysis.object.get(pk=analysis_id)
+    analysis.delete()
+    redirect_url = 'project/' + str(analysis.project.pk)
+    return HttpResponseRedirect(redirect_url)
+
+
+def runscript(input, output):
+    import subprocess
+    try:
+        subprocess.check_output(["Rscript", "rscripts/randomForest.r", input, output])
+    except subprocess.CalledProcessError:
+        pass

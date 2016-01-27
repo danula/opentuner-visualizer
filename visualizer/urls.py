@@ -37,9 +37,13 @@ urlpatterns = patterns('',
     url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
 
     url(r'^project/list/', views.project.index, name='project_list'),
-    url(r'^project/show/', views.project.show, name='project_show'),
+    url(r'^project/create/', views.project.create, name='project_create'),
+    url(r'^project/store/', views.project.store, name='project_store'),
+    url(r'^project/(?P<project_id>[0-9]*)', views.project.show, name='project_show'),
+    url(r'^project/destroy/(?P<project_id>[0-9]*)', views.project.destroy, name='project_destroy'),
 
-    # url(r'^analysis/show/$', views.analysis.show, name='analysis_show'),
-    # url(r'^analysis/destroy/$', views.analysis.destroy, name='analysis_destroy')
+    url(r'^analysis/create/', views.analysis.create, name='analysis_create'),
+    url(r'^analysis/store/', views.analysis.store, name='analysis_store'),
+    url(r'^analysis/destroy/(?P<analysis_id>[0-9]*)', views.analysis.destroy, name='analysis_destroy')
 
 )
