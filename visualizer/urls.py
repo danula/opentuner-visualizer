@@ -11,7 +11,8 @@ import views.project
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.plot.index, name='plot'),
     url(r'^plot/$', views.plot.index, name='plot'),
