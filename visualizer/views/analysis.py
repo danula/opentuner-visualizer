@@ -1,13 +1,9 @@
 from django.http.response import HttpResponseRedirect
-
 from django import forms
 from django.forms import ModelForm
 from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
-
 from visualizer.models import Project, Analysis
-
-__author__ = 'madawa'
 
 
 class CustomUserChoiceField(forms.ModelChoiceField):
@@ -24,7 +20,7 @@ class AnalysisForm(ModelForm):
 
     class Meta:
         model = Analysis
-        exclude = ['result_doc']
+        exclude = ['result_doc', 'status', 'created_at']
 
 
 @require_GET
@@ -54,6 +50,12 @@ def store(request):
 
 @require_GET
 def destroy(request, analysis_id):
+    """
+    Removes the given Analysis from the database
+    :param request: Request from the application
+    :param analysis_id: Index of the Analysis to delete
+    :return: Redirects to project view
+    """
     analysis = Analysis.object.get(pk=analysis_id)
     analysis.delete()
     redirect_url = 'project/' + str(analysis.project.pk)
