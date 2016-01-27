@@ -41,7 +41,7 @@ def get_data():
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
             + " WHERE result.state='OK' AND time < 1000000 "
             # Add this line for JVM
-            + " AND result.tuning_run_id=3 "
+            # + " AND result.tuning_run_id=3 "
             + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
@@ -160,15 +160,15 @@ def mds(dims, confs):
     # Center the data
     X_true -= X_true.mean()
 
-    similarities = euclidean_distances(X_true)
+    # similarities = euclidean_distances(X_true)
 
     print "##########"
 
     # Add noise to the similarities
 
-    mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed, dissimilarity="precomputed",
+    mds = manifold.MDS(n_components=2, max_iter=100, eps=1e-9, random_state=seed, dissimilarity="euclidean",
                        n_jobs=-1)
-    pos = mds.fit(similarities).embedding_
+    pos = mds.fit(X_true).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
     # npos = nmds.fit_transform(similarities, init=pos)
