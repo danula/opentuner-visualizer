@@ -1,8 +1,6 @@
-from django.views.decorators.http import require_POST
-
+from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
 from django.forms import ModelForm
-
 from visualizer.models import Project
 
 
@@ -12,26 +10,17 @@ class ProjectForm(ModelForm):
         fields = ['name', 'database', 'tuning_data']
 
 
+@require_GET
 def index(request):
     projects = Project.objects.all()
     return render(request, 'project_list.html', {'projects': projects})
 
 
-def create(request):
-    form = ProjectForm()
-    return render(request, 'project_create.html', {'form': form})
-
-
+@require_GET
 def show(request):
     return render(request, 'project_list.html')
 
 
-@require_POST
-def store(request):
-    new_project = ProjectForm(request.POST, request.FILES)
-    new_project.save()
-    return render(request, 'project_list.html')
-
-
+@require_GET
 def destroy(request):
     return render(request, 'project_list.html')
