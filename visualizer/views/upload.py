@@ -5,6 +5,7 @@ from django.views.decorators.http import require_POST
 import os
 import constants
 from os import path
+from visualizer import utils
 
 __author__ = 'madawa'
 
@@ -19,16 +20,17 @@ def save_file(f, config_type):
     try:
         if not path.exists(path.dirname(location)):
             os.makedirs(path.dirname(location))
-        with open('configuration_files/'+f.name, 'wb+') as destination:
+        with open('configuration_files/' + f.name, 'wb+') as destination:
             for chunk in f.chunks():
                 destination.write(chunk)
         if config_type == 'database':
-            constants.database_url = location+f.name
+            constants.database_url = location + f.name
         elif config_type == 'manipulator':
-            constants.manipulator_url = location+f.name
+            constants.manipulator_url = location + f.name
         return True
     except EnvironmentError:
         return False
+
 
 @require_POST
 def upload_files(request):

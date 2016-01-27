@@ -29,6 +29,8 @@ def unpickle_data(data):
 
 
 def get_data():
+    global highlighted_flags
+
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
@@ -49,18 +51,66 @@ def get_data():
     for i, val in enumerate(data['conf_data']):
         data['conf_data'][i] = unpickle_data(val)
     grouped = data.groupby('was_new_best')
+    print("**************************")
+    print(highlighted_flags)
+    print("**************************!!!!!!!!!!!!")
+    if highlighted_flags is None:
+        def to_int(x):
+            try:
+                return int(max(0, min(255, x)))
+            except OverflowError:
+                return 255
 
-    def to_int(x):
-        try:
-            return int(max(0, min(255, x)))
-        except OverflowError:
-            return 255
+        # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+        x = data['time']
+        print(x)
+        colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
+        print(colors)
+    else:
+        configurations = [unpickle_data(val) for val in data['conf_data'].values]
+        values = [0 for val in configurations]
+        parameter_count = 0
+        for parameter in manipulator.params:
+            if parameter.name in highlighted_flags:
+                if parameter.is_primitive():
+                    values_temp = [parameter.get_unit_value(config) for config in configurations]
+                elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
+                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options) for val in configurations]
+                else:
+                    continue
+                parameter_count = parameter_count + 1
+                if (highlighted_flags[parameter.name] == "1"):
+                    values = [values[i]+values_temp[i] for i in range(len(values))]
+                else:
+                    values = [values[i]+1-values_temp[i] for i in range(len(values))]
+        print(parameter_count)
+        if parameter_count == 0:
+            def to_int(x):
+                try:
+                    return int(max(0, min(255, x)))
+                except OverflowError:
+                    return 255
 
-    # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
-    x = data['time']
-    print(x)
-    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
-    print(colors)
+            # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+            x = data['time']
+            print(x)
+            colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
+            print(colors)
+        else:
+            colors = ["#%02x%02x%02x" % (t*255/parameter_count, 255 - 255*t/parameter_count, 0) for t in values]
+
+
+    # def to_int(x):
+    #     try:
+    #         return int(max(0, min(255, x)))
+    #     except OverflowError:
+    #         return 255
+    #
+    # # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    # x = data['time']
+    # print(x)
+    # colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
+    # print(colors)
     return data, grouped.get_group(1), colors
 
 
@@ -211,7 +261,11 @@ def timestamp(data):
     return (data - data[0]) / 1000000000
 
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session
+    global p, source, source_best, initialized, cur_session, manipulator, highlighted_flags
+    with open(constants.manipulator_url, "r") as f1:
+        manipulator = unpickle_data(f1.read())
+        print(manipulator)
+    highlighted_flags = None
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
@@ -241,7 +295,8 @@ def initialize_plot():
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
     p = figure(
-        tools=TOOLS, title="OpenTuner"
+        tools=TOOLS, title="OpenTuner",
+        x_axis_label='x axis', y_axis_label='y axis'
     )
 
     p.circle('x1', 'y1', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
@@ -285,6 +340,15 @@ def update_plot():
     cur_session.store_objects(source)
     cur_session.store_objects(source_best)
 
+def highlight_flag(request):
+    global highlighted_flags
+    if request.GET.get('flags', '') == "":
+        highlighted_flags = None
+    else:
+        highlighted_flags = dict(zip(request.GET.get('flags', '').split(","), request.GET.get('status', '').split(",")))
+    print(highlighted_flags)
+    update_plot()
+    return HttpResponse("success")
 
 def get_plot_html():
     global p

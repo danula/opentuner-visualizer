@@ -1,60 +1,54 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
+{% extends 'base.html' %}
 
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
+{% block styles %}
     <link rel="stylesheet" href="/static/css/jquery.dataTables.min.css"/>
+{% endblock %}
 
-    <script src="/static/js/lib/jquery.min.js"></script>
-    <script src="/static/js/lib/bootstrap.min.js"></script>
+{% block scripts %}
     <script src="/static/js/lib/jquery.dataTables.min.js"></script>
+    <script>
+        var table;
+        $(document).ready(function () {
+            table = jQuery('#configs_table').DataTable();
+        });
 
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
-<script>
-    var table;
-    $(document).ready(function () {
-        table = jQuery('#configs_table').DataTable();
-    });
+        var form;
+        function submitForm(isNewTuningRun) {
+            var params = table.$('input, select').serializeArray();
+            var form = $("<form>{% csrf_token %}</form>");
 
-    var form;
-    function submitForm(isNewTuningRun) {
-        var params = table.$('input, select').serializeArray();
-        var form = $("<form>{% csrf_token %}</form>");
+            form.attr("method", "post");
+            form.attr("action", ".");
 
-        form.attr("method", "post");
-        form.attr("action", ".");
-
-        $.each(params, function () {
+            $.each(params, function () {
+                var field = $('<input></input>');
+                field.attr("type", "hidden");
+                field.attr("name", this.name);
+                field.attr("value", this.value);
+                form.append(field);
+            });
             var field = $('<input></input>');
             field.attr("type", "hidden");
-            field.attr("name", this.name);
-            field.attr("value", this.value);
+            field.attr("name", "isNewTuningRun");
+            field.attr("value", isNewTuningRun);
             form.append(field);
-        });
-        var field = $('<input></input>');
-        field.attr("type", "hidden");
-        field.attr("name", "isNewTuningRun");
-        field.attr("value", isNewTuningRun);
-        form.append(field);
-        $(document.body).append(form);
-        form.submit();
-    }
-</script>
-<div class="col-md-6">
-    <table class="table table-bordered" id="configs_table">
-        <thead id="table-headers">
-        <th>Name</th>
-        <th>Value</th>
-        </thead>
-        {{ form.as_table }}
-    </table>
-    <button class="btn btn-primary" type="button" id="run_now" onclick="submitForm(false)">Run Now</button>
-    <button class="btn btn-primary" type="button" id="run_later" onclick="submitForm(true)">Run Later</button>
-</div>
-<div class="col-md-6"></div>
+            $(document.body).append(form);
+            form.submit();
+        }
+    </script>
+{% endblock %}
 
-</body>
-</html>
+{% block content %}
+    <div class="col-md-6">
+        <table class="table table-bordered" id="configs_table">
+            <thead id="table-headers">
+            <th>Name</th>
+            <th>Value</th>
+            </thead>
+            <tbody>{{ form }}</tbody>
+        </table>
+        <button class="btn btn-primary" type="button" id="run_now" onclick="submitForm(false)">Run Now</button>
+        <button class="btn btn-primary" type="button" id="run_later" onclick="submitForm(true)">Run Later</button>
+    </div>
+    <div class="col-md-6"></div>
+{% endblock %}
