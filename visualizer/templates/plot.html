@@ -33,7 +33,7 @@
                     </div>
                 </div>
             </div>
-            <div style="padding: 5px" class="col-md-12" id="">
+            <div style="padding: 5px; display: none" class="col-md-12" id="">
                 <input type="text" class="form-control" id="tokenfield" placeholder="Enter flag names"
                        onchange="tokenFieldChange()"/>
             </div>
@@ -69,9 +69,6 @@
 {% block customscripts %}
     <script>
         $('nav').hover(function (event) {
-            $('nav').toggleClass('active');
-        });
-        $('').click(function (event) {
             $('nav').toggleClass('active');
         });
     </script>

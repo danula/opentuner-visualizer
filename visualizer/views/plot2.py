@@ -158,7 +158,7 @@ def mds(dims, confs):
 
     # Add noise to the similarities
 
-    mds = manifold.MDS(n_components=2, max_iter=3000, eps=1e-9, random_state=seed, dissimilarity="precomputed",
+    mds = manifold.MDS(n_components=2, max_iter=100, eps=1e-9, random_state=seed, dissimilarity="precomputed",
                        n_jobs=-1)
     pos = mds.fit(similarities).embedding_
 

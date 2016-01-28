@@ -115,7 +115,7 @@ def initialize_plot():
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
     p = figure(
-        tools=TOOLS, title="OpenTuner",
+        tools=TOOLS, title="OpenTuner", logo=None,
         x_axis_label='OpenTuner Timestamp', y_axis_label='Execution Time (Sec)'
     )
 
