@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h3>{{ project.name }}</h3>
+    {% for analysis in project.analysis_set.all %}
+        <p>{{ analysis.name }}</p>
+        <p>{{ analysis.method }}</p>
+    {% endfor %}
+
+{% endblock %}

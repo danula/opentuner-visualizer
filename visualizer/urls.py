@@ -1,20 +1,21 @@
 from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
+import views.test
 import views.plot
 import views.plot2
 import views.plot_features
 import views.upload
 import views.configuration
+import views.analysis
+import views.project
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'visualizer.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
-
+urlpatterns = patterns(
+    '',
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^test/$', views.test.index, name='test'),
     url(r'^$', views.plot.index, name='plot'),
     url(r'^plot/$', views.plot.index, name='plot'),
     url(r'^plot/index/', views.plot.index, name='plot'),
@@ -37,4 +38,15 @@ urlpatterns = patterns('',
     url(r'^upload/$', views.upload.index, name='upload'),
 
     url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
+
+    url(r'^project/list/', views.project.index, name='project_list'),
+    url(r'^project/create/', views.project.create, name='project_create'),
+    url(r'^project/store/', views.project.store, name='project_store'),
+    url(r'^project/(?P<project_id>[0-9]*)', views.project.show, name='project_show'),
+    url(r'^project/destroy/(?P<project_id>[0-9]*)', views.project.destroy, name='project_destroy'),
+
+    url(r'^analysis/create/', views.analysis.create, name='analysis_create'),
+    url(r'^analysis/store/', views.analysis.store, name='analysis_store'),
+    url(r'^analysis/destroy/(?P<analysis_id>[0-9]*)', views.analysis.destroy, name='analysis_destroy')
+
 )

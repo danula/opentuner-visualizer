@@ -34,14 +34,14 @@ def get_data():
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
-            "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
+            "SELECT result_id, generation, result.configuration_id as conf_id,time,requestor,was_new_best, "
             + " collection_date as 'ts [timestamp]', configuration.data as conf_data "
             + " FROM result "
             + " JOIN desired_result ON desired_result.result_id = result.id  "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
             + " WHERE result.state='OK' AND time < 1000000 "
             # Add this line for JVM
-            + " AND result.tuning_run_id=1 "
+            # + " AND result.tuning_run_id=3 "
             + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
@@ -120,12 +120,14 @@ def get_configs(data):
         for p in manipulator.params:
             if p.is_primitive():
                 for d in data['conf_data']:
-                    d[p.name] = p.get_unit_value(d)
+                    # d[p.name] = p.get_unit_value(d)
+                    d[p.name] = p.get_value(d)
             elif isinstance(p, opentuner.search.manipulator.EnumParameter):
                 options = p.options
                 for d in data['conf_data']:
                     try:
-                        d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
+                        # d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
+                        d[p.name] = options.index(p.get_value(d))
                     except:
                         print("Invalid Configuration", p, p.name, d)
                         d[p.name] = 0
@@ -142,6 +144,12 @@ def get_configs(data):
             col.append('r')
         for j, k in enumerate(keys):
             confs[p][j] = d[k]
+
+    data2 = data[["result_id", "time"]]
+    data_frame = pd.DataFrame(columns=keys, data=confs)
+    data_frame = pd.concat([data2, data_frame], axis=1)
+    data_frame.to_csv("data_frame.csv")
+
     return data, dims, confs, col
 
 
@@ -152,7 +160,7 @@ def mds(dims, confs):
     # Center the data
     X_true -= X_true.mean()
 
-    similarities = euclidean_distances(X_true)
+    # similarities = euclidean_distances(X_true)
 
     print "##########"
 
@@ -160,7 +168,7 @@ def mds(dims, confs):
 
     mds = manifold.MDS(n_components=2, max_iter=100, eps=1e-9, random_state=seed, dissimilarity="precomputed",
                        n_jobs=-1)
-    pos = mds.fit(similarities).embedding_
+    pos = mds.fit(X_true).embedding_
 
     # nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,dissimilarity="precomputed", random_state=seed, n_jobs=1,n_init=1)
     # npos = nmds.fit_transform(similarities, init=pos)
@@ -252,7 +260,6 @@ initialized = False
 def timestamp(data):
     return (data - data[0]) / 1000000000
 
-
 def initialize_plot():
     global p, source, source_best, initialized, cur_session, manipulator, highlighted_flags
     with open(constants.manipulator_url, "r") as f1:
@@ -262,6 +269,8 @@ def initialize_plot():
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
+    # data.to_csv("data.csv")
+    # np.savetxt("confs.csv", confs, delimiter=",")
     pos = mds(dims, confs)
     # pos = isomap(dims, confs)
     # pos = tsne(dims, confs)

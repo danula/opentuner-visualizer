@@ -2,31 +2,30 @@
 
 {% block styles %}
     <link rel="stylesheet" href="/static/css/jquery.dynatable.css"/>
-    <link rel="stylesheet" href="/static/css/bootstrap-switch.css"/>
-    <link rel="stylesheet" href="/static/css/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="/static/css/bootstrap-switch.min.css"/>
+    <link rel="stylesheet" href="../static/css/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/static/css/bootstrap-tokenfield.css"/>
     <link rel="stylesheet" href="/static/css/style.css"/>
 {% endblock %}
 
 {% block scripts %}
     <script src="/static/js/lib/jquery-ui.min.js"></script>
-    <script src="/static/js/lib/bootstrap-switch.js"></script>
     <script src="/static/js/lib/jquery.dynatable.js"></script>
     <script src="/static/js/lib/bootstrap-tokenfield.js"></script>
     <script src="/static/js/plot.js"></script>
 {% endblock %}
 
 {% block content %}
-<div class="row right-column">
-    <div class="col-md-6">
-        {{ script_js }}
-    </div>
+    <div class="row right-column">
+        <div class="col-md-6">
+            {{ script_js }}
+        </div>
 
-    <div class="col-md-5 config-data-table">
-        <div style="padding: 5px" class="col-md-12" id="control-box">
-            <div id="control-knobs" class="col-md-6">
-                Enable Comparison <input type="checkbox" id="enable-comparison" onchange="enableComparison()">
-            </div>
+        <div class="col-md-6 config-data-table">
+            <div style="padding: 5px" class="col-md-12" id="control-box">
+                <div id="control-knobs" class="col-md-6">
+                    Enable Comparison <input type="checkbox" id="enable-comparison" onchange="enableComparison()">
+                </div>
 
                 <div id="control-extend" class="col-md-6">
                     <div class="col-md-12" id="comparison-controls" style="display: none">
@@ -42,13 +41,12 @@
                 <br><br>
             </div>
 
-        <div class="col-md-12">
-            <div id="custom-param-list">
-                <table id="custom-param-table" class="table">
-
-                </table>
+            <div class="col-md-12">
+                <div id="custom-param-list">
+                    <table id="custom-param-table" class="table">
+                    </table>
+                </div>
             </div>
-        </div>
 
             <h3>Configuration Details</h3>
 

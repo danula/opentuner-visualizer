@@ -5,14 +5,10 @@ import pickle
 import zlib
 from copy import deepcopy
 from django.shortcuts import render
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.shortcuts import render_to_response
-
 from opentuner.search.manipulator import EnumParameter, NumericParameter
-
 from opentuner.resultsdb.models import Configuration
 from opentuner.resultsdb.connect import connect
-
 from visualizer.views.custom_run import custom_run
 import constants
 
@@ -52,6 +48,7 @@ def create_form(cfg):
         form.fields[p.name].initial = p._get(cfg)
     return form
 
+
 def index(request, config_id):
     if request.method == 'POST':
         return configuration_edit(request)
@@ -79,4 +76,3 @@ def configuration_edit(request):
 
     custom_run(cfg, is_new_tuning_run)
     return render_to_response("plot.html")
-

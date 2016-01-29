@@ -1,19 +1,22 @@
-plot.html
+#idea_project_files
 *.pyc
 .idea/
 constants.py
 ~
 *~
+visualizer/migrations/
 
+#notebooks
 .ipynb_checkpoints/
 *.ipynb
 
-configuration_files/*
-
+#executables, databases and program files
 *.out
-
 *.sqlite3
-
 *.cpp
-
 params*
+
+#app generated directries
+databases/
+tuning_data/
+
