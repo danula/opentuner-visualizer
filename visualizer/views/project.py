@@ -1,6 +1,6 @@
 from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
-from django.forms import ModelForm
+from django.forms import ModelForm, TextInput, FileInput
 from visualizer.models import Project
 
 
@@ -8,6 +8,13 @@ class ProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = ['name', 'database', 'tuning_data']
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget = TextInput(attrs={
+            'id': 'name',
+            'class': 'form-control',
+            'placeholder': 'Project Name'})
 
 
 @require_GET
