@@ -11,7 +11,7 @@ var token_field;
 var clicked_flag;
 
 $(document).ready(function () {
-    config_table = jQuery('#configuration-table').dynatable();
+    config_table = jQuery('#configuration-table').DataTable();
     $.fn.bootstrapSwitch.defaults.size = 'normal';
     $("#enable-comparison").bootstrapSwitch();
     enableComparison();
@@ -58,7 +58,7 @@ function update_conf_details(obj) {
         success: function (response) {
             if (enable_comparison == false) {
                 update_table_structure(response.columns);
-                config_table = jQuery('#configuration-table').dynatable({
+                config_table = jQuery('#configuration-table').DataTable({
                     dataset: {
                         records: response.data
                     }
@@ -146,7 +146,7 @@ function showComparison() {
         success: function (response) {
             console.log(response);
             update_table_structure(["Name", "First", "Second"]);
-            config_table = jQuery('#configuration-table').dynatable({
+            config_table = jQuery('#configuration-table').DataTable({
                 dataset: {
                     records: response.data
                 }
@@ -195,7 +195,7 @@ function update_table2(selected_flags) {
         if (selected_flags[index].status != "IGN")
             checkbox = "checked";
 
-        table_html_body += "<tr><td><input type='checkbox' " + checkbox + " aria-label='...' onchange=\"ignoreFlag(this,'" +
+        table_html_body += "<tr flag-name='" +selected_flags[index].value + "'><td><input type='checkbox' " + checkbox + " aria-label='...' onchange=\"ignoreFlag(this,'" +
         selected_flags[index].value + "')\">" +
         "</td><td>" + selected_flags[index].value + "</td><td>" +
         "<div class='btn-group btn-group-xs' role='group' aria-label='...' style='float: right'>";
@@ -216,9 +216,13 @@ function update_table2(selected_flags) {
             "<button type='button' class='btn btn-default' onclick=\"offFlag(this,'" +
             selected_flags[index].value + "')\">" + "off</button></div></td>";
         }
-        table_html_body += "</tr>";
+        table_html_body += "<td style='text-align: center; vertical-align: middle;'><i style='cursor:pointer' class='fa fa-close' flagName='" + selected_flags[index].value + "' onclick='removeFlag(this)'></i></td></tr>";
     });
     jQuery("#custom-param-list").html(table_html_start + table_html_body + table_html_end);
+}
+
+function removeFlag(element){
+    console.log(element);
 }
 
 function onFlag(element, flagName) {
@@ -230,8 +234,8 @@ function onFlag(element, flagName) {
             node = $(token_flags[index]);
             token_flags[index].status = "ON";
             node = $("span.token-label:contains(" + flagName + ")");
-            console.log(node);
-            console.log(node.parent());
+            //console.log(node);
+            //console.log(node.parent());
             node.parent().css("background-color", "rgb(133, 255, 133)");
             var flag_status = node.text().split("(")[0];
             flag_status = flag_status + " (On)";
@@ -253,8 +257,8 @@ function offFlag(element, flagName) {
             node = $(token_flags[index]);
             token_flags[index].status = "OFF";
             node = $("span.token-label:contains(" + flagName + ")");
-            console.log(node);
-            console.log(node.parent());
+            //console.log(node);
+            //console.log(node.parent());
             node.parent().css("background-color", "rgb(255, 133, 133)");
             var flag_status = node.text().split("(")[0];
             flag_status = flag_status + " (Off)";
