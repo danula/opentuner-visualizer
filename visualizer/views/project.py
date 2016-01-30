@@ -1,13 +1,16 @@
+import os
+
 from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
 from django.forms import ModelForm, TextInput, FileInput
 from visualizer.models import Project
+import visualizer.utils as utils
 
 
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'database', 'tuning_data']
+        fields = ['name', 'database', 'manipulator']
 
     def __init__(self, *args, **kwargs):
         super(ProjectForm, self).__init__(*args, **kwargs)
@@ -15,6 +18,8 @@ class ProjectForm(ModelForm):
             'id': 'name',
             'class': 'form-control',
             'placeholder': 'Project Name'})
+        self.fields['database'].widget = FileInput(attrs={'id': 'database'})
+        self.fields['manipulator'].widget = FileInput(attrs={'id': 'manipulator'})
 
 
 @require_GET
@@ -37,8 +42,23 @@ def show(request, project_id):
 
 @require_POST
 def store(request):
-    new_project = ProjectForm(request.POST, request.FILES)
-    new_project.save()
+    project = Project()
+    project_name = request.POST['name']
+    database = request.FILES['database']
+    manipulator = request.FILES['manipulator']
+
+    project.name = project_name
+
+    if database is not None:
+        project.database.name = utils.save_file(database, os.path.join('databases', project_name))
+
+    if manipulator is not None:
+        project.manipulator.name = utils.save_file(manipulator, os.path.join('manipulator', project_name))
+
+    project.tuning_data.name = utils.generate_tuning_data(project.database.name, project.manipulator.name,
+                                                          project_name)
+
+    project.save()
     return render(request, 'project_list.html')
 
 
