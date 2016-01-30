@@ -12,8 +12,12 @@ class CustomUserChoiceField(forms.ModelChoiceField):
 
 
 class AnalysisForm(ModelForm):
-    name = forms.CharField()
-    project = CustomUserChoiceField(queryset=Project.objects.all())
+    name = forms.CharField(widget=forms.TextInput(attrs={'id': 'name', 'class': 'form-control'}))
+    project = CustomUserChoiceField(queryset=Project.objects.all(),
+                                    widget=forms.Select(attrs={
+                                        'id': 'project',
+                                        'class': 'form-control'
+                                    }))
     method = forms.ChoiceField(choices=(
         ('remove_param', 'Remove Parameters'), ('compare_bin', 'Compare Binaries'), ('random_forest', 'Random Forest'),
         ('relief', 'Relief')))
