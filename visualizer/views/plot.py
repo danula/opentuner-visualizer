@@ -19,7 +19,7 @@ from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
 from copy import deepcopy
-from visualizer.utils import unpickle_data, getZeroToOneValues
+from visualizer.utils import unpickle_data, get_zero_to_one_values
 
 def get_color_numeric(val, parameter):
     t = parameter.get_unit_value(val) * 255
@@ -295,8 +295,8 @@ def config3(request, points_id1,points_id2):
         rows2 = cur.fetchall()
         data2 = [(unpickle_data(d[0]), d[1]) for d in rows2]
 
-        data12 = getZeroToOneValues(deepcopy(data1))
-        data22 = getZeroToOneValues(deepcopy(data2))
+        data12 = get_zero_to_one_values(deepcopy(data1))
+        data22 = get_zero_to_one_values(deepcopy(data2))
 
         table_data = []
         for key in data1[0][0]:
@@ -376,7 +376,7 @@ def config(request, points_id):
         data = [(unpickle_data(d[0]), d[1]) for d in rows]
 
         table_data = []
-        data2 = getZeroToOneValues(deepcopy(data))
+        data2 = get_zero_to_one_values(deepcopy(data))
 
         for key in data[0][0]:
             record = {'name': key}

@@ -19,7 +19,7 @@ from bokeh.plotting import *
 from bokeh.embed import autoload_server
 from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
 from copy import deepcopy
-from visualizer.utils import unpickle_data, getZeroToOneValues
+from visualizer.utils import unpickle_data, get_zero_to_one_values
 from sklearn.linear_model import (RandomizedLasso, lasso_stability_path,
                                   LassoLarsCV)
 
