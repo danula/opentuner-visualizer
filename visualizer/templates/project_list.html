@@ -36,11 +36,7 @@
         });
 
         function showProject(id) {
-            $.ajax({
-                type: "GET",
-                url: '/project/?' + id
-            });
-            console.log(id);
+            window.location.href = '/project/' + id;
         }
     </script>
 {% endblock %}
