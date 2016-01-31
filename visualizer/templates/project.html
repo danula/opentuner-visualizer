@@ -3,8 +3,8 @@
 {% block content %}
     <h3>{{ project.name }}</h3>
     {% for analysis in project.analysis_set.all %}
-        <p>{{ analysis.name }}</p>
-        <p>{{ analysis.method }}</p>
+        <a>{{ project.name }}</a>
+        <a>{{ project.method }}</a>
     {% endfor %}
 
 {% endblock %}

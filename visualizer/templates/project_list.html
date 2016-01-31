@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <h3>List of Projects</h3>
+
+            <div class="clearfix"></div>
+            <table id="project_table" class="hover table-bordered dataTable">
+                <thead>
+                <th>Project ID</th>
+                <th>Project Name</th>
+                </thead>
+                <tbody>
+                {% for project in projects.all %}
+                    <tr style="cursor: pointer" onclick="showProject({{ project.id }})">
+                        <td>
+                            {{ project.id }}
+                        </td>
+                        <td>
+                            {{ project.name }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        var table;
+        $(document).ready(function () {
+            jQuery('#project_table').DataTable();
+        });
+
+        function showProject(id) {
+            $.ajax({
+                type: "GET",
+                url: '/project/?' + id
+            });
+            console.log(id);
+        }
+    </script>
+{% endblock %}
