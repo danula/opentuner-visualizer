@@ -1,8 +1,12 @@
+from datetime import datetime
+
 from django.http.response import HttpResponseRedirect
 from django import forms
 from django.forms import ModelForm
 from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
+
+from visualizer import utils
 from visualizer.models import Project, Analysis
 
 
@@ -24,7 +28,7 @@ class AnalysisForm(ModelForm):
 
     class Meta:
         model = Analysis
-        exclude = ['result_doc', 'status', 'created_at']
+        exclude = ['result_doc', 'status', 'created_at', 'tuning_data']
 
 
 @require_GET
@@ -45,9 +49,19 @@ def store(request):
     :param request: POST request from the form
     :return: redirect to the project view
     """
-    new_analysis = AnalysisForm(request.POST).save()
-    project = new_analysis.project
-    redirect_url = 'project/' + str(project.pk)
+    analysis = Analysis()
+    project = Project.objects.get(pk=request.POST['project'])
+    analysis.name = request.POST['name']
+    analysis.created_at = datetime.now()
+    analysis.method = request.POST['method']
+    analysis.project = project
+    analysis.status = 'created'
+    analysis.tuning_data.name = utils.generate_tuning_data(project.database.name, project.manipulator.name,
+                                                           project.name, analysis.name)
+
+    analysis.save()
+
+    redirect_url = '/project/' + str(project.pk)
 
     return HttpResponseRedirect(redirect_url)
 

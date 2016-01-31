@@ -56,9 +56,6 @@ def store(request):
     if manipulator is not None:
         project.manipulator.name = utils.save_file(manipulator, os.path.join('manipulator', project_name))
 
-    project.tuning_data.name = utils.generate_tuning_data(project.database.name, project.manipulator.name,
-                                                          project_name)
-
     project.save()
     return render(request, 'project_list.html')
 
