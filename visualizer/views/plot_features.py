@@ -1,27 +1,19 @@
-from django.http import HttpResponse
+import sqlite3 as lite
+from collections import OrderedDict
+
+import numpy as np
+import opentuner
+import pandas as pd
+from bokeh.embed import autoload_server
+from bokeh.models import HoverTool, ColumnDataSource
+from bokeh.plotting import *
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
+from sklearn.linear_model import (lasso_stability_path)
 
 import constants
-import json
+from visualizer.utils import unpickle_data
 
-import pickle
-import zlib
-import pandas as pd
-import sqlite3 as lite
-import numpy as np
-import time
-import opentuner
-
-from collections import OrderedDict
-from django.http import HttpResponse
-from bokeh.plotting import *
-from bokeh.embed import autoload_server
-from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
-from copy import deepcopy
-from visualizer.utils import unpickle_data, get_zero_to_one_values
-from sklearn.linear_model import (RandomizedLasso, lasso_stability_path,
-                                  LassoLarsCV)
 
 def get_data():
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:

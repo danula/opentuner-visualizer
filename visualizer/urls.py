@@ -5,7 +5,6 @@ import views.test
 import views.plot
 import views.plot2
 import views.plot_features
-import views.upload
 import views.configuration
 import views.analysis
 import views.project
@@ -32,10 +31,6 @@ urlpatterns = patterns(
 
 
     url(r'^plot3/$', views.plot_features.index, name='plot3'),
-
-    url(r'^upload/index/', views.upload.index, name='upload'),
-    url(r'^upload/upload_files/', views.upload.upload_files, name='upload_files'),
-    url(r'^upload/$', views.upload.index, name='upload'),
 
     url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
 

@@ -1,25 +1,21 @@
+import json
+import sqlite3 as lite
+from collections import OrderedDict
+from copy import deepcopy
+
+import numpy as np
+import opentuner
+import pandas as pd
+from bokeh.embed import autoload_server
+from bokeh.models import HoverTool, Callback
+from bokeh.plotting import *
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 import constants
-import json
-
-import pickle
-import zlib
-import pandas as pd
-import sqlite3 as lite
-import numpy as np
-import time
-import opentuner
-
-from collections import OrderedDict
-from django.http import HttpResponse
-from bokeh.plotting import *
-from bokeh.embed import autoload_server
-from bokeh.models import HoverTool, TapTool, OpenURL, ColumnDataSource, Callback, GlyphRenderer
-from copy import deepcopy
 from visualizer.utils import unpickle_data, get_zero_to_one_values
+
 
 def get_color_numeric(val, parameter):
     t = parameter.get_unit_value(val) * 255
