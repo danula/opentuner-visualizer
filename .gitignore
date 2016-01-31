@@ -4,7 +4,6 @@
 constants.py
 ~
 *~
-visualizer/migrations/
 
 #notebooks
 .ipynb_checkpoints/
@@ -19,4 +18,5 @@ params*
 #app generated directries
 databases/
 tuning_data/
+manipulator/
 
