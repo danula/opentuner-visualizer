@@ -4,7 +4,9 @@
     <h3>{{ project.name }}</h3>
     {% for analysis in project.analysis_set.all %}
         <a>{{ project.name }}</a>
-        <a>{{ project.method }}</a>
+        <a>{{ project.database }}</a>
+        <a>{{ project.manipulator }}</a>
+        <a>{{ project.tuning_data }}</a>
     {% endfor %}
 
 {% endblock %}
