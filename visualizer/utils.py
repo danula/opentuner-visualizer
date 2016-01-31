@@ -54,7 +54,7 @@ def get_zero_to_one_values(data):
     return data
 
 
-def generate_tuning_data(database_url, manipulator_url, project_name):
+def generate_tuning_data(database_url, manipulator_url, project_name, analysis_name):
     with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
@@ -87,7 +87,7 @@ def generate_tuning_data(database_url, manipulator_url, project_name):
                         data[i][p.name] = 'off'
                         data[i][p.name] = (options.index(p.get_value(data[i])) + 0.4999) / len(options)
 
-        location = os.path.join('tuning_data', project_name)
+        location = os.path.join('tuning_data', project_name, analysis_name)
         if not os.path.exists(location):
             os.makedirs(location)
         with open(os.path.join(location, 'data_frame.csv'), 'wb') as f:

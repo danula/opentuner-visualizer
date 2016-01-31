@@ -5,7 +5,6 @@ class Project(models.Model):
     app_label = 'visualizer'
     name = models.CharField(max_length=50)
     database = models.FileField(upload_to='databases/', null=True)
-    tuning_data = models.FileField(upload_to='tuning_data/', null=True, blank=True)
     manipulator = models.FileField(upload_to='manipulator/', null=True)
 
     def get_name(self):
@@ -18,6 +17,7 @@ class Analysis(models.Model):
     method = models.CharField(max_length=20)
     status = models.CharField(max_length=10, default='created', null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    tuning_data = models.FileField(upload_to='tuning_data/', null=True, blank=True)
     result_doc = models.FileField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
