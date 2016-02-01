@@ -1,9 +1,26 @@
 {% extends 'base.html' %}
 
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/bokeh.min.css"/>
+{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-md-12">
-            <div class="chart"></div>
+            <div class="chart">
+                {% autoescape off %}
+                    {{ plot }}
+                {% endautoescape %}
+            </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/bokeh.min.js"></script>
+{% endblock %}
+
+{% block customscripts %}
+    {% autoescape off %}
+        {{ script }}
+    {% endautoescape %}
 {% endblock %}

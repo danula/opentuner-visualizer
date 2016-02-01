@@ -1,5 +1,12 @@
+from django.utils.safestring import mark_safe
+
+import pandas as pd
 from datetime import datetime
 
+from bokeh.embed import autoload_server, autoload_static, components
+from bokeh.io import cursession
+from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure
 from django.http.response import HttpResponseRedirect
 from django import forms
 from django.forms import ModelForm
@@ -69,7 +76,23 @@ def store(request):
 @require_GET
 def show(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
-    return render(request, 'analysis.html', {'analysis': analysis})
+    data = pd.read_csv(analysis.result_doc.name, sep=',')
+    data.columns = ['Params', 'Importance']
+    source = ColumnDataSource(data=dict(
+        x=data['Params'],
+        y=data['Importance'],
+        fill_color='#000'
+    ))
+    tools = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
+            "box_select,lasso_select,poly_select"
+    p = figure(
+        tools=tools, title="OpenTuner", logo=None,
+        x_axis_label='OpenTuner Timestamp', y_axis_label='Execution Time (Sec)'
+    )
+
+    p.circle('x', 'y', fill_color='fill_color', line_color=None, source=source, size=5)
+    script, div = components(p)
+    return render(request, 'analysis.html', {'analysis': analysis, 'script': script, 'plot': div})
 
 
 @require_GET
