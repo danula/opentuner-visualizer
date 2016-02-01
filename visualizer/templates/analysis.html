@@ -4,13 +4,65 @@
     <link rel="stylesheet" type="text/css" href="/static/css/c3.min.css">
 {% endblock %}
 
+{% block menuitems %}
+    <li class="panel panel-default dropdown">
+        <a data-toggle="collapse" href="#plot">
+            <span class="icon fa fa-area-chart"></span><span class="title">Plot</span>
+        </a>
+        <!-- Dropdown level 1 -->
+        <div id="plot" class="panel-collapse collapse">
+            <div class="panel-body">
+                <ul class="nav navbar-nav">
+                    <li><a href="#">Default Plot</a>
+                    </li>
+                    <li><a href="#">Dimension Reduced Plot</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </li>
+    <li class="panel panel-default dropdown">
+        <a data-toggle="collapse" href="#analyze">
+            <span class="icon fa fa-line-chart"></span><span class="title">Analyze</span>
+        </a>
+        <!-- Dropdown level 1 -->
+        <div id="analyze" class="panel-collapse collapse">
+            <div class="panel-body">
+                <ul class="nav navbar-nav">
+                    <li><a href="#">Create New Analysis</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </li>
+    <li>
+        <a href="#">
+            <span class="icon fa fa-pencil"></span><span class="title">Configure Search Space</span>
+        </a>
+    </li>
+    <li>
+        <a href="#">
+            <span class="icon fa fa-trash"></span><span class="title">Remove Project</span>
+        </a>
+    </li>
+{% endblock %}
+
 {% block content %}
     <div class="row">
         <div class="col-md-12">
+            <h3>{{ analysis.project.name }} <i class="fa fa-angle-right"></i> <small>{{ analysis.name }}</small></h3>
+        </div>
+        <div class="col-md-9">
+            <h4 style="text-align: center; text-transform: uppercase">Significance Of Parameters</h4>
+            {% if analysis.method == 'random_forest' %}
+                <h5 style="text-align: center;">Random Forest</h5>
+            {% elif analysis.method == 'relief' %}
+                <h5 style="text-align: center;">Relief</h5>
+            {% endif %}
             <div id="chart">
-
             </div>
         </div>
+        <div class="col-md-3"></div>
     </div>
 {% endblock %}
 
@@ -27,7 +79,7 @@
                 data: {
                     json: {{ json }},
                     keys: {
-                        x: 'Param',
+                        x: 'Params',
                         value: ['Importance']
                     },
                     type: 'scatter'

@@ -73,6 +73,7 @@ def show(request, analysis_id):
     data = pd.read_csv(analysis.result_doc.name, sep=',')
     data.columns = ['Params', 'Importance']
     json = data.to_json(path_or_buf=None, orient='records')
+    print(json)
     return render(request, 'analysis.html', {'analysis': analysis, 'json': json})
 
 
