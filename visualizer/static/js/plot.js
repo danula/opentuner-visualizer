@@ -63,7 +63,7 @@ function update_conf_details(obj) {
                     dataset: {
                         records: response.data
                     }
-                }).on('click', 'tr', function () {
+                }).on('click', '> tbody > tr', function () {
                     var flag = $(this).children(":first").text();
                     var status = $($(this).children()[1]).text().toUpperCase();
 

@@ -79,10 +79,12 @@ def show(request, analysis_id):
     data = pd.read_csv(analysis.result_doc.name, sep=',')
     data.columns = ['Params', 'Importance']
     source = ColumnDataSource(data=dict(
-        x=data['Params'],
+        x=range(1, len(data) + 1),
         y=data['Importance'],
+        param=data['Params'],
         fill_color='#000'
     ))
+    print(data['Params'])
     tools = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
             "box_select,lasso_select,poly_select"
     p = figure(
@@ -110,6 +112,7 @@ def destroy(analysis_id):
 
 def runscript(input, output):
     import subprocess
+
     try:
         subprocess.check_output(["Rscript", "rscripts/randomForest.r", input, output])
     except subprocess.CalledProcessError:

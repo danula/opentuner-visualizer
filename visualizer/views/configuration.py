@@ -25,20 +25,20 @@ def unpickle_data(data):
     return pickle.loads(data)
 
 
-with open(constants.manipulator_url, "r") as f1:
-    manipulator = unpickle_data(f1.read())
-    fields = {}
-    print(manipulator)
-    i = 0
-    for p in manipulator.params:
-        if isinstance(p, NumericParameter):
-            fields[p.name] = forms.IntegerField(p.max_value, p.min_value,
-                                                widget=forms.NumberInput(attrs={'class': 'form-control'}))
-        elif isinstance(p, EnumParameter):
-            fields[p.name] = forms.ChoiceField(
-                choices=tuple([(p.options[i], p.options[i]) for i in range(len(p.options))]),
-                widget=forms.Select(attrs={'class': 'form-control'})
-            )
+# with open(constants.manipulator_url, "r") as f1:
+#     manipulator = unpickle_data(f1.read())
+#     fields = {}
+#     print(manipulator)
+#     i = 0
+#     for p in manipulator.params:
+#         if isinstance(p, NumericParameter):
+#             fields[p.name] = forms.IntegerField(p.max_value, p.min_value,
+#                                                 widget=forms.NumberInput(attrs={'class': 'form-control'}))
+#         elif isinstance(p, EnumParameter):
+#             fields[p.name] = forms.ChoiceField(
+#                 choices=tuple([(p.options[i], p.options[i]) for i in range(len(p.options))]),
+#                 widget=forms.Select(attrs={'class': 'form-control'})
+#             )
 
 
 def create_form(cfg):

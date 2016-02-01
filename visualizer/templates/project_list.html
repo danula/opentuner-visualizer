@@ -11,15 +11,12 @@
             <div class="clearfix"></div>
             <table id="project_table" class="hover table-bordered dataTable">
                 <thead>
-                <th>Project ID</th>
+{#                <th>Project ID</th>#}
                 <th>Project Name</th>
                 </thead>
                 <tbody>
                 {% for project in projects.all %}
                     <tr style="cursor: pointer" onclick="showProject({{ project.id }})">
-                        <td>
-                            {{ project.id }}
-                        </td>
                         <td>
                             {{ project.name }}
                         </td>

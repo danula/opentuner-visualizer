@@ -1,4 +1,5 @@
 import os
+from django.http import HttpResponseRedirect
 
 from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
@@ -37,7 +38,11 @@ def create(request):
 @require_GET
 def show(request, project_id):
     project = Project.objects.get(pk=project_id)
-    return render(request, 'project.html', {'project': project})
+    import constants
+
+    constants.database_url = project.database.name
+    constants.manipulator_url = project.manipulator.name
+    return HttpResponseRedirect('/plot')
 
 
 @require_POST

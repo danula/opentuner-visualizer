@@ -30,7 +30,7 @@ def get_color_enum(val, parameter):
 
 def get_data():
     global highlighted_flags
-
+    print(constants.database_url)
     with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
@@ -142,7 +142,7 @@ def initialize_plot():
         ("Timestamp", "@x"),
         ("Time", "@y")
     ])
-    show(p)
+    push()
     cur_session = cursession()
 
 
