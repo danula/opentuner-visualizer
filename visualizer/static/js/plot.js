@@ -11,7 +11,7 @@ var token_field;
 var clicked_flag;
 
 $(document).ready(function () {
-    config_table = jQuery('#configuration-table').DataTable();
+    config_table = jQuery('#configuration-table').dynatable();
     $.fn.bootstrapSwitch.defaults.size = 'normal';
     $("#enable-comparison").bootstrapSwitch();
     enableComparison();
@@ -58,7 +58,8 @@ function update_conf_details(obj) {
         success: function (response) {
             if (enable_comparison == false) {
                 update_table_structure(response.columns);
-                config_table = jQuery('#configuration-table').DataTable({
+                console.log(response.data);
+                config_table = jQuery('#configuration-table').dynatable({
                     dataset: {
                         records: response.data
                     }
@@ -144,9 +145,9 @@ function showComparison() {
         type: "GET",
         url: '/plot/config3/' + first_set + "/" + second_set,
         success: function (response) {
-            console.log(response);
+            console.log(response.data);
             update_table_structure(["Name", "First", "Second"]);
-            config_table = jQuery('#configuration-table').DataTable({
+            config_table = jQuery('#configuration-table').dynatable({
                 dataset: {
                     records: response.data
                 }

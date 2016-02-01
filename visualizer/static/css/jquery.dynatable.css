@@ -10,30 +10,30 @@
  */
 
 table {
-    color: rgb(110, 110, 110);
+    color: rgb(110, 110, 110)!important;;
 }
 
 th {
-    background: #006a72;
+    background: #006a72!important;
 }
 
 th a {
-    color: #fff;
+    color: #fff!important;
 }
 
 th a:hover {
-    color: #fff;
+    color: #fff!important;
     text-decoration: underline;
 }
 
 th a:visited {
-    color: #fff;
+    color: #fff!important;
     text-decoration: underline;
 }
 
 tr:hover {
-    background: #c7c7c8;
-    color: #090909;
+    background: #c7c7c8!important;;
+    color: #090909!important;;
 }
 
 .dynatable-search {
