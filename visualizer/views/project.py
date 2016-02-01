@@ -37,7 +37,6 @@ def create(request):
 @require_GET
 def show(request, project_id):
     project = Project.objects.get(pk=project_id)
-    print project
     return render(request, 'project.html', {'project': project})
 
 

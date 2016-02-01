@@ -67,10 +67,15 @@ def store(request):
 
 
 @require_GET
-def destroy(request, analysis_id):
+def show(request, analysis_id):
+    analysis = Analysis.objects.get(pk=analysis_id)
+    return render(request, 'analysis.html', {'analysis': analysis})
+
+
+@require_GET
+def destroy(analysis_id):
     """
     Removes the given Analysis from the database
-    :param request: Request from the application
     :param analysis_id: Index of the Analysis to delete
     :return: Redirects to project view
     """

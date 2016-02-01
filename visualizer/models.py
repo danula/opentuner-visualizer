@@ -18,7 +18,7 @@ class Analysis(models.Model):
     status = models.CharField(max_length=10, default='created', null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     tuning_data = models.FileField(upload_to='tuning_data/', null=True, blank=True)
-    result_doc = models.FileField(null=True)
+    result_doc = models.FileField(upload_to='result_data/', null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
