@@ -71,8 +71,9 @@ def store(request):
 def show(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
     data = pd.read_csv(analysis.result_doc.name, sep=',')
-    data.columns = ['Param', 'Importance']
+    data.columns = ['Params', 'Importance']
     json = data.to_json(path_or_buf=None, orient='records')
+    print(json)
     return render(request, 'analysis.html', {'analysis': analysis, 'json': json})
 
 
@@ -91,6 +92,7 @@ def destroy(analysis_id):
 
 def runscript(input, output):
     import subprocess
+
     try:
         subprocess.check_output(["nohup", "Rscript", "rscripts/randomForest.r", input, output])
     except subprocess.CalledProcessError:
