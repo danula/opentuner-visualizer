@@ -72,9 +72,11 @@ def show(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
     data = pd.read_csv(analysis.result_doc.name, sep=',')
     data.columns = ['Params', 'Importance']
-    json = data.to_json(path_or_buf=None, orient='records')
-    print(json)
-    return render(request, 'analysis.html', {'analysis': analysis, 'json': json})
+    json = data.sort(['Params'], ascending=True).to_json(path_or_buf=None, orient='records')
+
+    data = data.sort(['Importance'], ascending=False).head(n=10)
+    top = data.to_json(path_or_buf=None, orient='records')
+    return render(request, 'analysis.html', {'analysis': analysis, 'json': json, 'top': top})
 
 
 @require_GET
