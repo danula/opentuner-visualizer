@@ -1,3 +1,5 @@
+from django.conf.urls.static import static
+
 from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
@@ -8,6 +10,7 @@ import views.plot_features
 import views.configuration
 import views.analysis
 import views.project
+from visualizer import settings
 
 admin.autodiscover()
 
@@ -42,6 +45,10 @@ urlpatterns = patterns(
 
     url(r'^analysis/create/', views.analysis.create, name='analysis_create'),
     url(r'^analysis/store/', views.analysis.store, name='analysis_store'),
+    url(r'^analysis/(?P<analysis_id>[0-9]*)', views.analysis.show, name='analysis_show'),
     url(r'^analysis/destroy/(?P<analysis_id>[0-9]*)', views.analysis.destroy, name='analysis_destroy')
 
 )
+
+if settings.DEBUG is True:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

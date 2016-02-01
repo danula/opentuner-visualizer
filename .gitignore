@@ -19,5 +19,6 @@ params*
 databases/
 tuning_data/
 manipulator/
+result_data/
 visualizer/migrations/
 
