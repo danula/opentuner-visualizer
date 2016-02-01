@@ -1,5 +1,6 @@
 import os
 
+from django.http import HttpResponseRedirect
 from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
 from django.forms import ModelForm, TextInput, FileInput
@@ -56,7 +57,7 @@ def store(request):
         project.manipulator.name = utils.save_file(manipulator, os.path.join('manipulator', project_name))
 
     project.save()
-    return render(request, 'project_list.html')
+    return HttpResponseRedirect('/project/list/')
 
 
 @require_GET
