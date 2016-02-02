@@ -64,6 +64,7 @@ def store(request):
 
     analysis.save()
 
+    runscript(analysis.tuning_data.name, 'result_data/test.csv')
     redirect_url = '/project/' + str(project.pk)
 
     return HttpResponseRedirect(redirect_url)
@@ -97,14 +98,11 @@ def destroy(analysis_id):
     """
     analysis = Analysis.object.get(pk=analysis_id)
     analysis.delete()
-    redirect_url = 'project/' + str(analysis.project.pk)
-    return HttpResponseRedirect(redirect_url)
+    return HttpResponseRedirect('/project/list/')
 
 
 def runscript(input, output):
     import subprocess
 
-    try:
-        subprocess.check_output(["nohup", "Rscript", "rscripts/randomForest.r", input, output])
-    except subprocess.CalledProcessError:
-        pass
+    subprocess.Popen("Rscript visualizer/rscripts/randomForest.r '%s' '%s'" % (input, output), shell=True,
+                     stdin=None, stdout=None, stderr=None, close_fds=True)
