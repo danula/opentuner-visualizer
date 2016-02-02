@@ -118,11 +118,7 @@ def get_configs(data):
     with open(constants.manipulator_url, "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
-            if p.is_primitive():
-                for d in data['conf_data']:
-                    # d[p.name] = p.get_unit_value(d)
-                    d[p.name] = p.get_value(d)
-            elif isinstance(p, opentuner.search.manipulator.EnumParameter):
+            if isinstance(p, opentuner.search.manipulator.EnumParameter):
                 options = p.options
                 for d in data['conf_data']:
                     try:
@@ -149,7 +145,8 @@ def get_configs(data):
     data_frame = pd.DataFrame(columns=keys, data=confs)
     data_frame = pd.concat([data2, data_frame], axis=1)
     data_frame.to_csv("data_frame.csv")
-
+    print(dims)
+    print(confs.shape)
     return data, dims, confs, col
 
 

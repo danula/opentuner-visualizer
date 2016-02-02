@@ -84,9 +84,8 @@ def show(request, analysis_id):
     rows = []
     with open(analysis.result_doc.name, 'rb') as f:
         l = csv.reader(f, delimiter=',', quotechar='|')
+        next(l, None)
         for row in l:
-            if "Overall" in row[1]:
-                continue
             rows.append([row[0].replace("\"", ""), float(row[1])])
     rows.sort(key=lambda x: x[0])
     s = sum([row[1] for row in rows])
@@ -99,13 +98,13 @@ def show(request, analysis_id):
 
 
 @require_GET
-def destroy(analysis_id):
+def destroy(request, analysis_id):
     """
     Removes the given Analysis from the database
     :param analysis_id: Index of the Analysis to delete
     :return: Redirects to project view
     """
-    analysis = Analysis.object.get(pk=analysis_id)
+    analysis = Analysis.objects.get(pk=analysis_id)
     analysis.delete()
     return HttpResponseRedirect('/project/list/')
 

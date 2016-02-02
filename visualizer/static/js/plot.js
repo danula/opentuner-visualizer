@@ -57,6 +57,7 @@ setInterval(function () {
 }, 50000);
 
 function update_conf_details(obj) {
+    console.log('/plot/config/' + obj.join());
     $.ajax({
         type: "GET",
         url: '/plot/config/' + obj.join(),

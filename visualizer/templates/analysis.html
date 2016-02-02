@@ -41,18 +41,17 @@
                 <ul class="nav navbar-nav">
                     <li><a href="/analysis/create/">Create New Analysis</a>
                     </li>
+                    {% for analysis in analysis_set.all %}
+                        <li><a href="/analysis/{{ analysis.id }}">{{ analysis.name }}</a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
     </li>
     <li>
-        <a href="#">
-            <span class="icon fa fa-pencil"></span><span class="title">Configure Search Space</span>
-        </a>
-    </li>
-    <li>
-        <a href="#">
-            <span class="icon fa fa-trash"></span><span class="title">Remove Project</span>
+        <a href="/analysis/destroy/{{ analysis.id }}">
+            <span class="icon fa fa-trash"></span><span class="title">Remove Analysis</span>
         </a>
     </li>
 {% endblock %}

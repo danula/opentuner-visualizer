@@ -18,9 +18,9 @@ urlpatterns = patterns(
     '',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^test/$', views.test.index, name='test'),
-    url(r'^$', views.plot.index, name='plot'),
+    url(r'^$', views.project.index, name='plot'),
     url(r'^plot/$', views.plot.index, name='plot'),
-    url(r'^plot/index/', views.plot.index, name='plot'),
+    url(r'^plot/index/', views.project.index, name='plot'),
     url(r'^plot/update/', views.plot.update, name='plot_update'),
     url(r'^plot/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot.config, name='detail'),
     url(r'^plot/config3/(?P<points_id1>[0-9]*[,[0-9]*]*)/(?P<points_id2>[0-9]*[,[0-9]*]*)', views.plot.config3, name='detail'),
@@ -39,13 +39,13 @@ urlpatterns = patterns(
 
     url(r'^project/list/', views.project.index, name='project_list'),
     url(r'^project/create/$', views.project.create, name='project_create'),
-    url(r'^project/(?P<project_id>[0-9]*)', views.project.show, name='project_show'),
     url(r'^project/destroy/(?P<project_id>[0-9]*)', views.project.destroy, name='project_destroy'),
+    url(r'^project/(?P<project_id>[0-9]*)', views.project.show, name='project_show'),
 
     url(r'^analysis/create/', views.analysis.create, name='analysis_create'),
     url(r'^analysis/store/', views.analysis.store, name='analysis_store'),
-    url(r'^analysis/(?P<analysis_id>[0-9]*)', views.analysis.show, name='analysis_show'),
-    url(r'^analysis/destroy/(?P<analysis_id>[0-9]*)', views.analysis.destroy, name='analysis_destroy')
+    url(r'^analysis/destroy/(?P<analysis_id>[0-9]*)', views.analysis.destroy, name='analysis_destroy'),
+    url(r'^analysis/(?P<analysis_id>[0-9]*)', views.analysis.show, name='analysis_show')
 
 )
 

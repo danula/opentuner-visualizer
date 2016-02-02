@@ -1,3 +1,4 @@
+from django.http.response import HttpResponseRedirect
 import json
 import sqlite3 as lite
 from collections import OrderedDict
@@ -13,7 +14,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
-import constants
 from visualizer.utils import unpickle_data, get_zero_to_one_values
 
 
@@ -30,8 +30,12 @@ def get_color_enum(val, parameter):
 
 def get_data():
     global highlighted_flags
-    print(constants.database_url)
-    with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
+    if current_project.database_url:
+        database_url = current_project.database_url
+    else:
+        database_url = current_project.database.name
+    print(current_project)
+    with lite.connect(database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
@@ -56,7 +60,7 @@ def get_data():
     else:
         configurations = [unpickle_data(val) for val in data['conf_data'].values]
         values = [0 for val in configurations]
-        #for uniform colour
+        # for uniform colour
         # values2 = [0 for val in configurations]
         parameter_count = 0
         for parameter in manipulator.params:
@@ -65,26 +69,28 @@ def get_data():
                     values_temp = [parameter.get_unit_value(config) for config in configurations]
                     # values_temp2 = [parameter.get_unit_value(config) for config in configurations]
                 elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
-                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options) for val in configurations]
+                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options)
+                                   for val in configurations]
                     # values_temp = [ parameter.options.index(parameter.get_value(val)) for val in configurations]
                 else:
                     continue
                 parameter_count = parameter_count + 1
                 if highlighted_flags[parameter.name] == "ON":
-                    values = [values[i]+values_temp[i] for i in range(len(values))]
+                    values = [values[i] + values_temp[i] for i in range(len(values))]
                 elif highlighted_flags[parameter.name] == "OFF":
-                    values = [values[i]+1-values_temp[i] for i in range(len(values))]
+                    values = [values[i] + 1 - values_temp[i] for i in range(len(values))]
         print(parameter_count)
         if parameter_count == 0:
             colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
         else:
-            colors = ["#%02x%02x%02x" % (t*255/parameter_count, 255 - 255*t/parameter_count, 0) for t in values]
+            colors = ["#%02x%02x%02x" % (t * 255 / parameter_count, 255 - 255 * t / parameter_count, 0) for t in values]
             # colors = ["#%02x%02x%02x" % (t, t, t) for t in values2]
 
     return data, grouped.get_group(1), colors
 
 
 initialized = False
+current_project = None
 
 
 def timestamp(data):
@@ -93,7 +99,7 @@ def timestamp(data):
 
 def initialize_plot():
     global p, source, source_best, initialized, cur_session, highlighted_flags, manipulator
-    with open(constants.manipulator_url, "r") as f1:
+    with open(current_project.manipulator.name, "r") as f1:
         manipulator = unpickle_data(f1.read())
         print(manipulator)
     highlighted_flags = None
@@ -120,7 +126,7 @@ def initialize_plot():
         tools=TOOLS,
         logo=None,
         border_fill="whitesmoke",
-        x_axis_label='OpenTuner Timestamp',
+        x_axis_label='OpenTuner Running Time (Sec)',
         y_axis_label='Execution Time (Sec)'
     )
     p.xaxis.axis_label_text_font_size = "10pt"
@@ -176,11 +182,15 @@ def get_plot_html():
 
 
 def index(request, project):
-    global initialized
+    global initialized, current_project
+    current_project = project
+    print(project.database)
     if not initialized:
         initialize_plot()
+    else:
+        update_plot()
     # for analysis in project.analysis_set.all:
-    #     print(analysis.name)
+    # print(analysis.name)
     return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html()), 'project': project})
 
 
@@ -190,7 +200,11 @@ def update(request):
 
 
 def get_flags(request):
-    with lite.connect(constants.database_url) as con:
+    if current_project.database_url:
+        database_url = current_project.database_url
+    else:
+        database_url = current_project.database.name
+    with lite.connect(database_url) as con:
         cur = con.cursor()
     cur.execute(
         "SELECT configuration.data as conf_data"
@@ -220,7 +234,11 @@ def highlight_flag(request):
 
 def config2(request, points_id):
     print(points_id)
-    with lite.connect(constants.database_url) as con:
+    if current_project.database_url:
+        database_url = current_project.database_url
+    else:
+        database_url = current_project.database.name
+    with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT configuration.data as conf_data, configuration.id"
@@ -283,8 +301,13 @@ def config2(request, points_id):
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-def config3(request, points_id1,points_id2):
-    with lite.connect(constants.database_url) as con:
+
+def config3(request, points_id1, points_id2):
+    if current_project.database_url:
+        database_url = current_project.database_url
+    else:
+        database_url = current_project.database.name
+    with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT configuration.data as conf_data, configuration.id"
@@ -341,7 +364,7 @@ def config3(request, points_id1,points_id2):
             record['stdev1'] = np.std(a)
             b = np.array(data23)
             record['stdev2'] = np.std(b)
-            record['meandiff'] = abs(np.mean(a)-np.mean(b))
+            record['meandiff'] = abs(np.mean(a) - np.mean(b))
             record['first'] = str(values1)
             record['second'] = str(values2)
             table_data.append(record)
@@ -371,7 +394,11 @@ def config3(request, points_id1,points_id2):
 
 def config(request, points_id):
     print(points_id)
-    with lite.connect(constants.database_url) as con:
+    if current_project.database_url:
+        database_url = current_project.database_url
+    else:
+        database_url = current_project.database.name
+    with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT configuration.data as conf_data, configuration.id"
@@ -411,8 +438,8 @@ def config(request, points_id):
                     max = values[data[i][0][key]]
 
                 # if value == 'default':
-                #    value = data[i][0][key]
-                #if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
+                # value = data[i][0][key]
+                # if equal and (data[i][0][key] != 'default') and (data[i][0][key] != data[0][0][key]):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
@@ -438,6 +465,5 @@ def config(request, points_id):
         else:
             columns = ['Value']
         response_data = {'data': table_data, 'columns': ['Name'] + columns}
-
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
+    return HttpResponseRedirect(json.dumps(response_data), content_type="application/json")
 
