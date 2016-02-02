@@ -44,6 +44,11 @@ $(document).ready(function () {
 
 });
 
+$(window).resize(function () {
+    Bokeh.Collections('Plot').at(0).set("plot_width", $("#bokeh-plot").width());
+    Bokeh.Collections('Plot').at(0).set("plot_height", $("#bokeh-plot").width());
+});
+
 setInterval(function () {
     $.ajax({
         type: "GET",
@@ -196,7 +201,7 @@ function update_table2(selected_flags) {
         if (selected_flags[index].status != "IGN")
             checkbox = "checked";
 
-        table_html_body += "<tr flag-name='" +selected_flags[index].value + "'><td><input type='checkbox' " + checkbox + " aria-label='...' onchange=\"ignoreFlag(this,'" +
+        table_html_body += "<tr flag-name='" + selected_flags[index].value + "'><td><input type='checkbox' " + checkbox + " aria-label='...' onchange=\"ignoreFlag(this,'" +
         selected_flags[index].value + "')\">" +
         "</td><td>" + selected_flags[index].value + "</td><td>" +
         "<div class='btn-group btn-group-xs' role='group' aria-label='...' style='float: right'>";
@@ -222,7 +227,7 @@ function update_table2(selected_flags) {
     jQuery("#custom-param-list").html(table_html_start + table_html_body + table_html_end);
 }
 
-function removeFlag(element){
+function removeFlag(element) {
     console.log(element);
 }
 

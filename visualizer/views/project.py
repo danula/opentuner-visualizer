@@ -1,12 +1,14 @@
 import os
 
-from django.forms import ModelForm, TextInput, FileInput, ValidationError
+from django.forms import ModelForm, TextInput, FileInput
+from django.forms import ValidationError
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, render_to_response
-from django.views.decorators.http import require_POST, require_GET
+from django.shortcuts import render
+from django.views.decorators.http import require_GET
 
 import visualizer.utils as utils
 from visualizer.models import Project
+from visualizer.views import plot
 
 
 class ProjectForm(ModelForm):
@@ -79,7 +81,8 @@ def show(request, project_id):
     else:
         constants.database_url = project.database.name
     constants.manipulator_url = project.manipulator.name
-    return HttpResponseRedirect('/plot')
+
+    return plot.index(request, project)
 
 
 @require_GET

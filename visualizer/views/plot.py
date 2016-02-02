@@ -115,10 +115,18 @@ def initialize_plot():
     TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
+
     p = figure(
-        tools=TOOLS, title="OpenTuner", logo=None,
-        x_axis_label='OpenTuner Timestamp', y_axis_label='Execution Time (Sec)'
+        tools=TOOLS,
+        logo=None,
+        border_fill="whitesmoke",
+        x_axis_label='OpenTuner Timestamp',
+        y_axis_label='Execution Time (Sec)'
     )
+    p.xaxis.axis_label_text_font_size = "10pt"
+    p.xaxis.axis_label_text_font = "roboto condensed"
+    p.yaxis.axis_label_text_font_size = "10pt"
+    p.yaxis.axis_label_text_font = "roboto condensed"
 
     p.circle('x', 'y', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
     p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=5)
@@ -167,11 +175,13 @@ def get_plot_html():
     return autoload_server(p, cursession())
 
 
-def index(request):
+def index(request, project):
     global initialized
     if not initialized:
         initialize_plot()
-    return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html())})
+    # for analysis in project.analysis_set.all:
+    #     print(analysis.name)
+    return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html()), 'project': project})
 
 
 def update(request):

@@ -25,9 +25,9 @@
         <div id="plot" class="panel-collapse collapse">
             <div class="panel-body">
                 <ul class="nav navbar-nav">
-                    <li><a href="#">Default Plot</a>
+                    <li><a href="/project/{{ project.id }}">Default Plot</a>
                     </li>
-                    <li><a href="#">Dimension Reduced Plot</a>
+                    <li><a href="/plot2">Dimension Reduced Plot</a>
                     </li>
                 </ul>
             </div>
@@ -41,8 +41,12 @@
         <div id="analyze" class="panel-collapse collapse">
             <div class="panel-body">
                 <ul class="nav navbar-nav">
-                    <li><a href="#">Create New Analysis</a>
+                    <li><a href="/analysis/create/">Create New Analysis</a>
                     </li>
+                    {% for analysis in project.analysis_set.all %}
+                        <li><a href="/analysis/{{ analysis.id }}">{{ analysis.name }}</a>
+                        </li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
