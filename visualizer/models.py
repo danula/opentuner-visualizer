@@ -4,8 +4,9 @@ from django.db import models
 class Project(models.Model):
     app_label = 'visualizer'
     name = models.CharField(max_length=50)
-    database = models.FileField(upload_to='databases/', null=True)
+    database = models.FileField(upload_to='databases/', null=True, blank=True)
     manipulator = models.FileField(upload_to='manipulator/', null=True)
+    database_url = models.TextField(null=True, blank=True)
 
     def get_name(self):
         return self.name

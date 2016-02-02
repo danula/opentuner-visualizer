@@ -1,6 +1,8 @@
-import pandas as pd
+import csv
+
 from datetime import datetime
 
+import math
 from django import forms
 from django.forms import ModelForm
 from django.http.response import HttpResponseRedirect
@@ -70,13 +72,21 @@ def store(request):
 @require_GET
 def show(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
-    data = pd.read_csv(analysis.result_doc.name, sep=',')
-    data.columns = ['Params', 'Importance']
-    json = data.sort(['Params'], ascending=True).to_json(path_or_buf=None, orient='records')
+    rows = []
+    with open(analysis.result_doc.name, 'rb') as f:
+        l = csv.reader(f, delimiter=',', quotechar='|')
+        for row in l:
+            if "Overall" in row[1]:
+                continue
+            rows.append([row[0].replace("\"", ""), float(row[1])])
+    rows.sort(key=lambda x: x[0])
+    s = sum([row[1] for row in rows])
+    m = min([row[1] for row in rows])
+    json_data = [{'Params': row[0], 'Importance': (row[1] - m) * 100.0 / s} for row in rows]
+    rows.sort(key=lambda x: -x[1])
+    top_params = [{'Params': row[0], 'Importance': math.floor((row[1] - m) * 10000.0 / s) / 100.0} for row in rows[:10]]
 
-    data = data.sort(['Importance'], ascending=False).head(n=10)
-    top = data.to_json(path_or_buf=None, orient='records')
-    return render(request, 'analysis.html', {'analysis': analysis, 'json': json, 'top': top})
+    return render(request, 'analysis.html', {'analysis': analysis, 'json': json_data, 'top': top_params})
 
 
 @require_GET

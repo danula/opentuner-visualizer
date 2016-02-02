@@ -38,8 +38,7 @@ urlpatterns = patterns(
     url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
 
     url(r'^project/list/', views.project.index, name='project_list'),
-    url(r'^project/create/', views.project.create, name='project_create'),
-    url(r'^project/store/', views.project.store, name='project_store'),
+    url(r'^project/create/$', views.project.create, name='project_create'),
     url(r'^project/(?P<project_id>[0-9]*)', views.project.show, name='project_show'),
     url(r'^project/destroy/(?P<project_id>[0-9]*)', views.project.destroy, name='project_destroy'),
 
