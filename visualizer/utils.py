@@ -75,17 +75,13 @@ def generate_tuning_data(database_url, manipulator_url, project_name, analysis_n
     with open(manipulator_url, "r") as f1:
         manipulator = unpickle_data(f1.read())
         for p in manipulator.params:
-            if p.is_primitive():
-                for i in range(len(data)):
-                    data[i][p.name] = p.get_unit_value(data[i])
-            elif isinstance(p, opentuner.search.manipulator.EnumParameter):
+            if isinstance(p, opentuner.search.manipulator.EnumParameter):
                 options = p.options
                 for i in range(len(data)):
                     try:
-                        data[i][p.name] = (options.index(p.get_value(data[i])) + 0.4999) / len(options)
+                        data[i][p.name] = options.index(p.get_value(data[i]))
                     except:
-                        data[i][p.name] = 'off'
-                        data[i][p.name] = (options.index(p.get_value(data[i])) + 0.4999) / len(options)
+                        pass
 
         location = os.path.join('tuning_data', project_name, analysis_name)
         if not os.path.exists(location):
