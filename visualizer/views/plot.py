@@ -120,7 +120,7 @@ def initialize_plot():
         tools=TOOLS,
         logo=None,
         border_fill="whitesmoke",
-        x_axis_label='OpenTuner Timestamp',
+        x_axis_label='OpenTuner Running Time (Sec)',
         y_axis_label='Execution Time (Sec)'
     )
     p.xaxis.axis_label_text_font_size = "10pt"
@@ -179,6 +179,8 @@ def index(request, project):
     global initialized
     if not initialized:
         initialize_plot()
+    else:
+        update_plot()
     # for analysis in project.analysis_set.all:
     #     print(analysis.name)
     return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html()), 'project': project})

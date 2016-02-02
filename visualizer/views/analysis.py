@@ -75,9 +75,8 @@ def show(request, analysis_id):
     rows = []
     with open(analysis.result_doc.name, 'rb') as f:
         l = csv.reader(f, delimiter=',', quotechar='|')
+        next(l, None)
         for row in l:
-            if "Overall" in row[1]:
-                continue
             rows.append([row[0].replace("\"", ""), float(row[1])])
     rows.sort(key=lambda x: x[0])
     s = sum([row[1] for row in rows])
