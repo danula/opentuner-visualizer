@@ -87,6 +87,7 @@ def show(request, project_id):
 
 @require_GET
 def destroy(request, project_id):
+    print (project_id)
     project = Project.objects.get(pk=project_id)
     project.delete()
     return HttpResponseRedirect('/project/list/')

@@ -90,13 +90,13 @@ def show(request, analysis_id):
 
 
 @require_GET
-def destroy(analysis_id):
+def destroy(request, analysis_id):
     """
     Removes the given Analysis from the database
     :param analysis_id: Index of the Analysis to delete
     :return: Redirects to project view
     """
-    analysis = Analysis.object.get(pk=analysis_id)
+    analysis = Analysis.objects.get(pk=analysis_id)
     analysis.delete()
     return HttpResponseRedirect('/project/list/')
 
