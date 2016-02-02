@@ -175,11 +175,13 @@ def get_plot_html():
     return autoload_server(p, cursession())
 
 
-def index(request):
+def index(request, project):
     global initialized
     if not initialized:
         initialize_plot()
-    return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html())})
+    # for analysis in project.analysis_set.all:
+    #     print(analysis.name)
+    return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html()), 'project': project})
 
 
 def update(request):

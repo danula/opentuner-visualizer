@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.shortcuts import render
 from django.forms import ModelForm, TextInput, FileInput
 from visualizer.models import Project
+from visualizer.views import plot
 import visualizer.utils as utils
 
 
@@ -43,7 +44,9 @@ def show(request, project_id):
 
     constants.database_url = project.database.name
     constants.manipulator_url = project.manipulator.name
-    return HttpResponseRedirect('/plot')
+
+    return plot.index(request, project)
+    # return HttpResponseRedirect('/plot', args=project)
 
 
 @require_POST
