@@ -2,6 +2,16 @@
 
 {% block styles %}
     <link rel="stylesheet" type="text/css" href="/static/css/c3.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-table.min.css">
+    <style>
+        .c3 svg {
+            font: 14px sans-serif;
+        }
+        .c3-axis-x > g {
+            display: none;
+        }
+
+    </style>
 {% endblock %}
 
 {% block menuitems %}
@@ -50,9 +60,11 @@
 {% block content %}
     <div class="row">
         <div class="col-md-12">
-            <h3>{{ analysis.project.name }} <i class="fa fa-angle-right"></i> <small>{{ analysis.name }}</small></h3>
+            <h3>{{ analysis.project.name }} <i class="fa fa-angle-right"></i>
+                <small>{{ analysis.name }}</small>
+            </h3>
         </div>
-        <div class="col-md-9">
+        <div class="col-md-8">
             <h4 style="text-align: center; text-transform: uppercase">Significance Of Parameters</h4>
             {% if analysis.method == 'random_forest' %}
                 <h5 style="text-align: center;">Random Forest</h5>
@@ -62,13 +74,24 @@
             <div id="chart">
             </div>
         </div>
-        <div class="col-md-3"></div>
+        <div class="col-md-4">
+            <h4 style="text-align: center; text-transform: uppercase">Most Important Parameters</h4>
+            <table id="table-top" class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th data-field="Params">Parameter</th>
+                    <th data-field="Importance">Importance Score</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
     <script type="text/javascript" src="/static/js/d3.min.js"></script>
     <script type="text/javascript" src="/static/js/c3.min.js"></script>
+    <script type="text/javascript" src="/static/js/lib/bootstrap-table.min.js"></script>
 {% endblock %}
 
 {% block customscripts %}
@@ -82,17 +105,20 @@
                         x: 'Params',
                         value: ['Importance']
                     },
-                    type: 'scatter'
+                    type: 'scatter',
+                    colors: {
+                        Importance: '#ff0000'
+                    }
                 },
 
                 axis: {
                     x: {
+                        type: 'category',
                         tick: {
                             culling: {
                                 max: 2
                             }
                         },
-                        type: 'category',
                         label: {
                             text: 'Parameter',
                             position: 'outer-center'
@@ -110,7 +136,18 @@
                 },
                 legend: {
                     show: false
+                },
+                padding: {
+                    top: 5,
+                    bottom: 5
                 }
+            });
+        </script>
+        <script>
+            $(document).ready(function () {
+                $('#table-top').bootstrapTable({
+                    data: {{ top }}
+                });
             });
         </script>
     {% endautoescape %}
