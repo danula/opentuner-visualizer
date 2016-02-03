@@ -38,6 +38,54 @@
     </script>
 {% endblock %}
 
+{% block menuitems %}
+    <li class="panel panel-default dropdown">
+        <a data-toggle="collapse" href="#plot">
+            <span class="icon fa fa-area-chart"></span><span class="title">Plot</span>
+        </a>
+        <!-- Dropdown level 1 -->
+        <div id="plot" class="panel-collapse collapse">
+            <div class="panel-body">
+                <ul class="nav navbar-nav">
+                    <li><a href="/plots/{{ analysis.project.pk }}">Default Plot</a>
+                    </li>
+                    <li><a href="/plot2/{{ analysis.project.pk }}">Dimension Reduced Plot</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </li>
+    <li class="panel panel-default dropdown">
+        <a data-toggle="collapse" href="#analyze">
+            <span class="icon fa fa-line-chart"></span><span class="title">Analyze</span>
+        </a>
+        <!-- Dropdown level 1 -->
+        <div id="analyze" class="panel-collapse collapse">
+            <div class="panel-body">
+                <ul class="nav navbar-nav">
+                    <li><a href="/analysis/create/">Create New Analysis</a>
+                    </li>
+                    {% for analysis in project.analysis_set.all %}
+                        <li class="{{ analysis.status }}"><a href="/analysis/{{ analysis.id }}">{{ analysis.name }}
+                            ({{ analysis.status }})</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </li>
+    <li>
+        <a href="#" onclick="editConfig()">
+            <span class="icon fa fa-pencil"></span><span class="title">Configure Search Space</span>
+        </a>
+    </li>
+    <li>
+        <a href="/project/destroy/{{ project.id }}">
+            <span class="icon fa fa-trash"></span><span class="title">Remove Project</span>
+        </a>
+    </li>
+{% endblock %}
+
 {% block content %}
     <div class="col-md-6">
         <table class="table table-bordered" id="configs_table">

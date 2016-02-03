@@ -18,6 +18,7 @@ from bokeh.models import HoverTool, ColumnDataSource, Callback
 
 import constants
 import opentuner
+from visualizer.models import Project
 
 
 def unpickle_data(data):
@@ -29,19 +30,17 @@ def unpickle_data(data):
 
 
 def get_data():
-    global highlighted_flags
-
     with lite.connect(constants.get_database_url(), detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
-            "SELECT result_id, generation, result.configuration_id as conf_id,time,requestor,was_new_best, "
+            "SELECT result_id, generation, result.configuration_id as conf_id, time,requestor,was_new_best, "
             + " collection_date as 'ts [timestamp]', configuration.data as conf_data "
             + " FROM result "
             + " JOIN desired_result ON desired_result.result_id = result.id  "
             + " JOIN configuration ON configuration.id =  result.configuration_id  "
             + " WHERE result.state='OK' AND time < 1000000 "
             # Add this line for JVM
-            # + " AND result.tuning_run_id=3 "
+            + " AND result.tuning_run_id=1 "
             + " ORDER BY collection_date"
         )
         rows = cur.fetchall()
@@ -51,68 +50,17 @@ def get_data():
     for i, val in enumerate(data['conf_data']):
         data['conf_data'][i] = unpickle_data(val)
     grouped = data.groupby('was_new_best')
-    print("**************************")
-    print(highlighted_flags)
-    print("**************************!!!!!!!!!!!!")
-    if highlighted_flags is None:
-        def to_int(x):
-            try:
-                return int(max(0, min(255, x)))
-            except OverflowError:
-                return 255
 
-        # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
-        x = data['time']
-        print(x)
-        colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in
-                  np.floor(256 * (x - x.min()) / (x.max() / 2 - x.min()))]
-        print(colors)
-    else:
-        configurations = [unpickle_data(val) for val in data['conf_data'].values]
-        values = [0 for val in configurations]
-        parameter_count = 0
-        for parameter in manipulator.params:
-            if parameter.name in highlighted_flags:
-                if parameter.is_primitive():
-                    values_temp = [parameter.get_unit_value(config) for config in configurations]
-                elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
-                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options)
-                                   for val in configurations]
-                else:
-                    continue
-                parameter_count = parameter_count + 1
-                if (highlighted_flags[parameter.name] == "1"):
-                    values = [values[i] + values_temp[i] for i in range(len(values))]
-                else:
-                    values = [values[i] + 1 - values_temp[i] for i in range(len(values))]
-        print(parameter_count)
-        if parameter_count == 0:
-            def to_int(x):
-                try:
-                    return int(max(0, min(255, x)))
-                except OverflowError:
-                    return 255
+    def to_int(x):
+        try:
+            return int(max(0, min(255, x)))
+        except OverflowError:
+            return 255
 
-            # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
-            x = data['time']
-            print(x)
-            colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in
-                      np.floor(256 * (x - x.min()) / (x.max() / 2 - x.min()))]
-            print(colors)
-        else:
-            colors = ["#%02x%02x%02x" % (t * 255 / parameter_count, 255 - 255 * t / parameter_count, 0) for t in values]
-
-
-    # def to_int(x):
-    # try:
-    #         return int(max(0, min(255, x)))
-    #     except OverflowError:
-    #         return 255
-    #
-    # # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
-    # x = data['time']
+    # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
+    x = data['time']
     # print(x)
-    # colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
+    colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
     # print(colors)
     return data, grouped.get_group(1), colors
 
@@ -120,12 +68,14 @@ def get_data():
 def get_configs(data):
     manipulator = constants.get_manipulator()
     for p in manipulator.params:
-        if isinstance(p, opentuner.search.manipulator.EnumParameter):
+        if p.is_primitive():
+            for d in data['conf_data']:
+                d[p.name] = p.get_unit_value(d)
+        elif isinstance(p, opentuner.search.manipulator.EnumParameter):
             options = p.options
             for d in data['conf_data']:
                 try:
-                    # d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
-                    d[p.name] = options.index(p.get_value(d))
+                    d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
                 except:
                     print("Invalid Configuration", p, p.name, d)
                     d[p.name] = 0
@@ -142,13 +92,6 @@ def get_configs(data):
             col.append('r')
         for j, k in enumerate(keys):
             confs[p][j] = d[k]
-
-    data2 = data[["result_id", "time"]]
-    data_frame = pd.DataFrame(columns=keys, data=confs)
-    data_frame = pd.concat([data2, data_frame], axis=1)
-    data_frame.to_csv("data_frame.csv")
-    print(dims)
-    print(confs.shape)
     return data, dims, confs, col
 
 
@@ -161,7 +104,7 @@ def mds(dims, confs):
 
     # similarities = euclidean_distances(X_true)
 
-    print "##########"
+    print "Dimension reduction started"
 
     # Add noise to the similarities
 
@@ -174,13 +117,13 @@ def mds(dims, confs):
 
 
 
-    print "##########"
+    print "Dimension reduction completed"
     # Rescale the data
     pos *= np.sqrt((X_true ** 2).sum()) / np.sqrt((pos ** 2).sum())
 
     # Rotate the data
     clf = PCA(n_components=2)
-    # X_true = clf.fit_transform(X_true)
+    #X_true = clf.fit_transform(X_true)
 
     pos = clf.fit_transform(pos)
 
@@ -246,7 +189,7 @@ def tsne(dims, confs):
 
     # Rotate the data
     clf = PCA(n_components=2)
-    # X_true = clf.fit_transform(X_true)
+    #X_true = clf.fit_transform(X_true)
 
     pos = clf.fit_transform(pos)
 
@@ -261,16 +204,13 @@ def timestamp(data):
 
 
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session, highlighted_flags
-    highlighted_flags = None
+    global p, source, source_best, initialized, cur_session
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
-    # data.to_csv("data.csv")
-    # np.savetxt("confs.csv", confs, delimiter=",")
-    # pos = mds(dims, confs)
+    pos = mds(dims, confs)
     # pos = isomap(dims, confs)
-    pos = tsne(dims, confs)
+    # pos = tsne(dims, confs)
 
 
     source = ColumnDataSource(data=dict(
@@ -291,7 +231,6 @@ def initialize_plot():
     TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
-
     p = figure(
         tools=TOOLS,
         logo=None,
@@ -326,7 +265,7 @@ def initialize_plot():
         ("Timestamp", "@x"),
         ("Time", "@y")
     ])
-    show(p)
+    push()
     cur_session = cursession()
 
 
@@ -346,27 +285,17 @@ def update_plot():
     cur_session.store_objects(source_best)
 
 
-def highlight_flag(request):
-    global highlighted_flags
-    if request.GET.get('flags', '') == "":
-        highlighted_flags = None
-    else:
-        highlighted_flags = dict(zip(request.GET.get('flags', '').split(","), request.GET.get('status', '').split(",")))
-    print(highlighted_flags)
-    update_plot()
-    return HttpResponse("success")
-
-
 def get_plot_html():
     global p
     return autoload_server(p, cursession())
 
 
-def index(request):
+def index(request, project_id):
+    project = Project.objects.get(pk=project_id)
     global initialized
     if not initialized:
         initialize_plot()
-    return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html())})
+    return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html()), 'project': project})
 
 
 def update(request):
@@ -452,7 +381,7 @@ def config(request, points_id):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
-            values = [4, 6, 8, 2, 3]
+            values = [4,6,8,2,3]
             record['stdev'] = np.std(values)
 
             table_data.append(record)
@@ -465,4 +394,3 @@ def config(request, points_id):
         response_data = {'data': table_data, 'columns': ['Name'] + columns}
 
     return HttpResponse(json.dumps(response_data), content_type="application/json")
-

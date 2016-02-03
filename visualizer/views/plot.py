@@ -189,8 +189,6 @@ def index(request, project_id):
         initialize_plot()
     else:
         update_plot()
-    # for analysis in project.analysis_set.all:
-    # print(analysis.name)
     return render(request, 'plot.html', {'script_js': mark_safe(get_plot_html()), 'project': project})
 
 

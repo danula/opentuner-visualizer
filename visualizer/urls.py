@@ -28,8 +28,9 @@ urlpatterns = patterns(
     url(r'^plot/get_flags/', views.plot.get_flags, name='get_flags'),
     url(r'^plots/(?P<project_id>[0-9]*)', views.plot.index, name='plot'),
 
-    url(r'^plot2/$', views.plot2.index, name='plot2'),
-    url(r'^plot2/index/', views.plot2.index, name='plot2'),
+    url(r'^plot2/(?P<project_id>[0-9]*)', views.plot2.index, name='plot2'),
+    # url(r'^plot2/$', views.plot2.index, name='plot2'),
+    # url(r'^plot2/index/', views.plot2.index, name='plot2'),
     url(r'^plot2/update/', views.plot2.update, name='plot2_update'),
     url(r'^plot2/config/(?P<points_id>[0-9]*[,[0-9]*]*)', views.plot2.config, name='detail'),
 
