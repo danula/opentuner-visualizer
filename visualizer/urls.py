@@ -37,7 +37,7 @@ urlpatterns = patterns(
 
     url(r'^plot3/$', views.plot_features.index, name='plot3'),
 
-    url(r'^config/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
+    url(r'^config/(?P<project_id>[0-9]*)/(?P<config_id>[0-9]*)', views.configuration.index, name='configuration'),
 
     url(r'^project/list/', views.project.index, name='project_list'),
     url(r'^project/create/$', views.project.create, name='project_create'),

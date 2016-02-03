@@ -122,9 +122,9 @@
         function editConfig() {
             text = $(".dynatable-sort-header")[1].text;
             if (Number.isInteger(parseInt(text))) {
-                window.location.href = "/config/" + text;
+                window.location.href = "/config/" + {{ project.id }} +"/" + text;
             } else {
-                window.location.href = "/config/1";
+                window.location.href = "/config/" + {{ project.id }} +"/1";
             }
         }
     </script>

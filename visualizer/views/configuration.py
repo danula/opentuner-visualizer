@@ -1,3 +1,7 @@
+from django.http import HttpResponseRedirect
+
+from visualizer.models import Project
+
 __author__ = 'madawa'
 
 from django import forms
@@ -50,9 +54,10 @@ def create_form(cfg):
     return form
 
 
-def index(request, config_id):
+def index(request, project_id, config_id):
+    project = Project.objects.get(pk=project_id)
     if request.method == 'POST':
-        return configuration_edit(request)
+        return configuration_edit(request, project_id)
     else:
         read_manipulator()
         engine, session = connect("sqlite:///" + constants.get_database_url())
@@ -60,10 +65,10 @@ def index(request, config_id):
         configuration = session.query(Configuration).filter_by(id=config_id).one()
         data = configuration.data.copy()
         form = create_form(data)
-        return render(request, "configuration.html", {'form': form})
+        return render(request, "configuration.html", {'form': form, 'project': project})
 
 
-def configuration_edit(request):
+def configuration_edit(request, project_id):
     data = request.POST.dict()
     cfg = {}
     is_new_tuning_run = False
@@ -77,4 +82,5 @@ def configuration_edit(request):
             cfg[p.name] = data[p.name]
 
     custom_run(cfg, is_new_tuning_run)
-    return render_to_response("plot.html")
+    return HttpResponseRedirect('/plots/'+project_id)
+    # return render_to_response("plot.html")
