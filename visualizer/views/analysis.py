@@ -1,4 +1,5 @@
 import csv
+import os
 
 from datetime import datetime
 
@@ -10,6 +11,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 
 from visualizer import utils
+from visualizer import settings
 from visualizer.models import Project, Analysis
 
 
@@ -19,15 +21,14 @@ class CustomUserChoiceField(forms.ModelChoiceField):
 
 
 class AnalysisForm(ModelForm):
-    name = forms.CharField(widget=forms.TextInput(attrs={'id': 'name', 'class': 'form-control'}))
+    name = forms.CharField(
+            widget=forms.TextInput(attrs={'id': 'name', 'class': 'form-control', 'required': 'required'}))
     project = CustomUserChoiceField(queryset=Project.objects.all(),
                                     widget=forms.Select(attrs={
                                         'id': 'project',
                                         'class': 'form-control'
                                     }))
-    method = forms.ChoiceField(choices=(
-        ('remove_param', 'Remove Parameters'), ('compare_bin', 'Compare Binaries'), ('random_forest', 'Random Forest'),
-        ('relief', 'Relief')))
+    method = forms.ChoiceField(choices=(('random_forest', 'Random Forest'), ('relief', 'Relief')))
 
     class Meta:
         model = Analysis
@@ -63,8 +64,15 @@ def store(request):
                                                            project.name, analysis.name)
 
     analysis.save()
+    out_path = os.path.join('result_data', project.name, analysis.name, 'result.csv')
+    if not os.path.exists(os.path.dirname(out_path)):
+        os.makedirs(os.path.dirname(out_path))
+    method = 'randomForest.r'
 
-    runscript(analysis.tuning_data.name, 'result_data/test.csv')
+    if analysis.method is 'relief':
+        method = 'relief.r'
+
+    runscript(analysis.tuning_data.name, method, out_path, analysis.pk)
     redirect_url = '/project/' + str(project.pk)
 
     return HttpResponseRedirect(redirect_url)
@@ -103,8 +111,12 @@ def destroy(request, analysis_id):
     return HttpResponseRedirect('/project/list/')
 
 
-def runscript(input, output):
+def runscript(tuning_data, method, out_path, analysis):
     import subprocess
 
-    subprocess.Popen("Rscript visualizer/rscripts/randomForest.r '%s' '%s'" % (input, output), shell=True,
-                     stdin=None, stdout=None, stderr=None, close_fds=True)
+    database = os.path.join(settings.BASE_DIR, 'visualizer.sqlite3')
+    subprocess.Popen(
+            "Rscript visualizer/rscripts/" + method + " '%s' '%s' '%s' '%s'" % (
+                tuning_data, out_path, database, analysis),
+            shell=True, stdin=None, stdout=None, stderr=None, close_fds=True
+    )
