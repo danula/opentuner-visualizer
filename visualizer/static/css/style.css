@@ -290,7 +290,7 @@ a:hover {
       .app-container .content-container .side-menu:hover .panel-collapse.in {
         display: block; }
     .app-container .content-container .side-body {
-      padding-top: 70px; }
+      padding-top: 0px; }
     .app-container .content-container .side-body.padding-top {
       padding-top: 84px; }
 

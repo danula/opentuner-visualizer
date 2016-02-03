@@ -14,7 +14,7 @@ import constants
 DB_VERSION = "0.0"
 
 def custom_run(data, is_new_tuning_run):
-    engine, Session = connect("sqlite:///" + constants.database_url)
+    engine, Session = connect("sqlite:///" + constants.get_database_url())
     Session = Session()
     # conn.execute("PRAGMA busy_timeout = 300000")
 
@@ -23,8 +23,7 @@ def custom_run(data, is_new_tuning_run):
         tuning_run_id = tuning_run_id + 1
 
     result = Session.query(Configuration)
-    with open(constants.manipulator_url, "r") as f1:
-        manipulator = unpickle_data(f1.read())
+    manipulator = constants.get_manipulator()
 
     cfg_old = result.order_by(desc(Configuration.id)).first()
     hashv = manipulator.hash_config(data)

@@ -44,7 +44,8 @@
                     <li><a href="/analysis/create/">Create New Analysis</a>
                     </li>
                     {% for analysis in project.analysis_set.all %}
-                        <li><a href="/analysis/{{ analysis.id }}">{{ analysis.name }}</a>
+                        <li class="{{ analysis.status }}"><a href="/analysis/{{ analysis.id }}">{{ analysis.name }}
+                            ({{ analysis.status }})</a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -52,7 +53,7 @@
         </div>
     </li>
     <li>
-        <a href="/config/1">
+        <a href="#" onclick="editConfig()">
             <span class="icon fa fa-pencil"></span><span class="title">Configure Search Space</span>
         </a>
     </li>
@@ -96,7 +97,7 @@
                 </div>
             </div>
 
-            <h3>Configuration Details</h3>
+            <h4 style="font-family: 'Roboto Condensed', sans-serif">Configuration Details</h4>
 
             <div id="config-table">
                 <table id="configuration-table" class="table table-bordered">
@@ -117,5 +118,14 @@
         $('nav').hover(function (event) {
             $('nav').toggleClass('active');
         });
+
+        function editConfig() {
+            text = $(".dynatable-sort-header")[1].text;
+            if (Number.isInteger(parseInt(text))) {
+                window.location.href = "/config/" + text;
+            } else {
+                window.location.href = "/config/1";
+            }
+        }
     </script>
 {% endblock %}

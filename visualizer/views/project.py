@@ -77,12 +77,13 @@ def show(request, project_id):
     project = Project.objects.get(pk=project_id)
     import constants
     if project.database_url:
-        constants.database_url = project.database_url
+        database_url = project.database_url
     else:
-        constants.database_url = project.database.name
-    constants.manipulator_url = project.manipulator.name
+        database_url = project.database.name
+    constants.save_config(database_url, project.manipulator.name)
 
-    return plot.index(request, project)
+    return HttpResponseRedirect('/plots/'+project_id)
+    # return plot.index(request, project)
 
 
 @require_GET

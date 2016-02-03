@@ -26,6 +26,7 @@ urlpatterns = patterns(
     url(r'^plot/config3/(?P<points_id1>[0-9]*[,[0-9]*]*)/(?P<points_id2>[0-9]*[,[0-9]*]*)', views.plot.config3, name='detail'),
     url(r'^plot/highlight_flag/', views.plot.highlight_flag, name='highlight_flag'),
     url(r'^plot/get_flags/', views.plot.get_flags, name='get_flags'),
+    url(r'^plots/(?P<project_id>[0-9]*)', views.plot.index, name='plot'),
 
     url(r'^plot2/$', views.plot2.index, name='plot2'),
     url(r'^plot2/index/', views.plot2.index, name='plot2'),

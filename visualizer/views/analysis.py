@@ -58,7 +58,7 @@ def store(request):
     analysis.created_at = datetime.now()
     analysis.method = request.POST['method']
     analysis.project = project
-    analysis.status = 'created'
+    analysis.status = 'incomplete'
     analysis.tuning_data.name = utils.generate_tuning_data(project.database.name, project.manipulator.name,
                                                            project.name, analysis.name)
 
@@ -73,6 +73,7 @@ def store(request):
 @require_GET
 def show(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
+    project = analysis.project
     rows = []
     with open(analysis.result_doc.name, 'rb') as f:
         l = csv.reader(f, delimiter=',', quotechar='|')
@@ -86,7 +87,8 @@ def show(request, analysis_id):
     rows.sort(key=lambda x: -x[1])
     top_params = [{'Params': row[0], 'Importance': math.floor((row[1] - m) * 10000.0 / s) / 100.0} for row in rows[:10]]
 
-    return render(request, 'analysis.html', {'analysis': analysis, 'json': json_data, 'top': top_params})
+    return render(request, 'analysis.html',
+                  {'analysis': analysis, 'json': json_data, 'top': top_params, 'project': project})
 
 
 @require_GET

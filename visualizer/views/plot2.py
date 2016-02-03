@@ -31,7 +31,7 @@ def unpickle_data(data):
 def get_data():
     global highlighted_flags
 
-    with lite.connect(constants.database_url, detect_types=lite.PARSE_COLNAMES) as con:
+    with lite.connect(constants.get_database_url(), detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT result_id, generation, result.configuration_id as conf_id,time,requestor,was_new_best, "
@@ -64,7 +64,8 @@ def get_data():
         # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
         x = data['time']
         print(x)
-        colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
+        colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in
+                  np.floor(256 * (x - x.min()) / (x.max() / 2 - x.min()))]
         print(colors)
     else:
         configurations = [unpickle_data(val) for val in data['conf_data'].values]
@@ -75,14 +76,15 @@ def get_data():
                 if parameter.is_primitive():
                     values_temp = [parameter.get_unit_value(config) for config in configurations]
                 elif isinstance(parameter, opentuner.search.manipulator.EnumParameter):
-                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options) for val in configurations]
+                    values_temp = [(parameter.options.index(parameter.get_value(val)) + 0.4999) / len(parameter.options)
+                                   for val in configurations]
                 else:
                     continue
                 parameter_count = parameter_count + 1
                 if (highlighted_flags[parameter.name] == "1"):
-                    values = [values[i]+values_temp[i] for i in range(len(values))]
+                    values = [values[i] + values_temp[i] for i in range(len(values))]
                 else:
-                    values = [values[i]+1-values_temp[i] for i in range(len(values))]
+                    values = [values[i] + 1 - values_temp[i] for i in range(len(values))]
         print(parameter_count)
         if parameter_count == 0:
             def to_int(x):
@@ -94,14 +96,15 @@ def get_data():
             # colors = ["red" if (val == 1) else "blue" for val in data['was_new_best'].values]
             x = data['time']
             print(x)
-            colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in np.floor(256*(x-x.min())/(x.max()/2-x.min()))]
+            colors = ["#%02x%02x%02x" % (255 - to_int(r), to_int(r), 0) for r in
+                      np.floor(256 * (x - x.min()) / (x.max() / 2 - x.min()))]
             print(colors)
         else:
-            colors = ["#%02x%02x%02x" % (t*255/parameter_count, 255 - 255*t/parameter_count, 0) for t in values]
+            colors = ["#%02x%02x%02x" % (t * 255 / parameter_count, 255 - 255 * t / parameter_count, 0) for t in values]
 
 
     # def to_int(x):
-    #     try:
+    # try:
     #         return int(max(0, min(255, x)))
     #     except OverflowError:
     #         return 255
@@ -115,18 +118,17 @@ def get_data():
 
 
 def get_configs(data):
-    with open(constants.manipulator_url, "r") as f1:
-        manipulator = unpickle_data(f1.read())
-        for p in manipulator.params:
-            if isinstance(p, opentuner.search.manipulator.EnumParameter):
-                options = p.options
-                for d in data['conf_data']:
-                    try:
-                        # d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
-                        d[p.name] = options.index(p.get_value(d))
-                    except:
-                        print("Invalid Configuration", p, p.name, d)
-                        d[p.name] = 0
+    manipulator = constants.get_manipulator()
+    for p in manipulator.params:
+        if isinstance(p, opentuner.search.manipulator.EnumParameter):
+            options = p.options
+            for d in data['conf_data']:
+                try:
+                    # d[p.name] = (options.index(p.get_value(d)) + 0.4999) / len(options)
+                    d[p.name] = options.index(p.get_value(d))
+                except:
+                    print("Invalid Configuration", p, p.name, d)
+                    d[p.name] = 0
 
     dims = data['conf_data'][0].__len__()
     print data.__len__()
@@ -163,7 +165,7 @@ def mds(dims, confs):
 
     # Add noise to the similarities
 
-    mds = manifold.MDS(n_components=2, max_iter=100, eps=1e-9, random_state=seed, dissimilarity="precomputed",
+    mds = manifold.MDS(n_components=2, max_iter=100, eps=1e-9, random_state=seed, dissimilarity="euclidean",
                        n_jobs=-1)
     pos = mds.fit(X_true).embedding_
 
@@ -178,7 +180,7 @@ def mds(dims, confs):
 
     # Rotate the data
     clf = PCA(n_components=2)
-    #X_true = clf.fit_transform(X_true)
+    # X_true = clf.fit_transform(X_true)
 
     pos = clf.fit_transform(pos)
 
@@ -244,7 +246,7 @@ def tsne(dims, confs):
 
     # Rotate the data
     clf = PCA(n_components=2)
-    #X_true = clf.fit_transform(X_true)
+    # X_true = clf.fit_transform(X_true)
 
     pos = clf.fit_transform(pos)
 
@@ -257,20 +259,18 @@ initialized = False
 def timestamp(data):
     return (data - data[0]) / 1000000000
 
+
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session, manipulator, highlighted_flags
-    with open(constants.manipulator_url, "r") as f1:
-        manipulator = unpickle_data(f1.read())
-        print(manipulator)
+    global p, source, source_best, initialized, cur_session, highlighted_flags
     highlighted_flags = None
     initialized = True
     data, best_data, colors = get_data()
     data, dims, confs, col = get_configs(data)
     # data.to_csv("data.csv")
     # np.savetxt("confs.csv", confs, delimiter=",")
-    pos = mds(dims, confs)
+    # pos = mds(dims, confs)
     # pos = isomap(dims, confs)
-    # pos = tsne(dims, confs)
+    pos = tsne(dims, confs)
 
 
     source = ColumnDataSource(data=dict(
@@ -291,10 +291,18 @@ def initialize_plot():
     TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,hover,previewsave,tap," \
             "box_select,lasso_select,poly_select"
     output_server("opentuner2")
+
     p = figure(
-        tools=TOOLS, title="OpenTuner",
-        x_axis_label='x axis', y_axis_label='y axis'
+        tools=TOOLS,
+        logo=None,
+        border_fill="whitesmoke",
+        x_axis_label='Dimension 1',
+        y_axis_label='Dimension 2'
     )
+    p.xaxis.axis_label_text_font_size = "10pt"
+    p.xaxis.axis_label_text_font = "roboto condensed"
+    p.yaxis.axis_label_text_font_size = "10pt"
+    p.yaxis.axis_label_text_font = "roboto condensed"
 
     p.circle('x1', 'y1', conf_id='conf_id', fill_color='fill_color', line_color=None, source=source, size=5)
     # p.line('x', 'y', conf_id='conf_id', line_color="red", source=source_best, size=5)
@@ -337,6 +345,7 @@ def update_plot():
     cur_session.store_objects(source)
     cur_session.store_objects(source_best)
 
+
 def highlight_flag(request):
     global highlighted_flags
     if request.GET.get('flags', '') == "":
@@ -346,6 +355,7 @@ def highlight_flag(request):
     print(highlighted_flags)
     update_plot()
     return HttpResponse("success")
+
 
 def get_plot_html():
     global p
@@ -366,7 +376,7 @@ def update(request):
 
 def config2(request, points_id):
     print(points_id)
-    with lite.connect(constants.database_url) as con:
+    with lite.connect(constants.get_database_url()) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT configuration.data as conf_data, configuration.id"
@@ -419,7 +429,7 @@ def config2(request, points_id):
 
 def config(request, points_id):
     print(points_id)
-    with lite.connect(constants.database_url) as con:
+    with lite.connect(constants.get_database_url()) as con:
         cur = con.cursor()
         cur.execute(
             "SELECT configuration.data as conf_data, configuration.id"
@@ -442,7 +452,7 @@ def config(request, points_id):
                 if equal and (data[i][0][key] != value):
                     equal = False
 
-            values = [4,6,8,2,3]
+            values = [4, 6, 8, 2, 3]
             record['stdev'] = np.std(values)
 
             table_data.append(record)

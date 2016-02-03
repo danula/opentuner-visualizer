@@ -13,6 +13,8 @@ from bokeh.plotting import *
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
+from visualizer.models import Project
+import constants
 
 from visualizer.utils import unpickle_data, get_zero_to_one_values
 
@@ -30,10 +32,8 @@ def get_color_enum(val, parameter):
 
 def get_data():
     global highlighted_flags
-    if current_project.database_url:
-        database_url = current_project.database_url
-    else:
-        database_url = current_project.database.name
+    manipulator = constants.get_manipulator()
+    database_url = constants.get_database_url()
     print(current_project)
     with lite.connect(database_url, detect_types=lite.PARSE_COLNAMES) as con:
         cur = con.cursor()
@@ -98,10 +98,9 @@ def timestamp(data):
 
 
 def initialize_plot():
-    global p, source, source_best, initialized, cur_session, highlighted_flags, manipulator
-    with open(current_project.manipulator.name, "r") as f1:
-        manipulator = unpickle_data(f1.read())
-        print(manipulator)
+    global p, source, source_best, initialized, cur_session, highlighted_flags
+    manipulator = constants.get_manipulator()
+    print(manipulator)
     highlighted_flags = None
     initialized = True
     data, best_data, colors = get_data()
@@ -181,10 +180,11 @@ def get_plot_html():
     return autoload_server(p, cursession())
 
 
-def index(request, project):
-    global initialized, current_project
-    current_project = project
-    print(project.database)
+def index(request, project_id):
+    project = Project.objects.get(pk=project_id)
+    global initialized
+    database_url = constants.get_database_url()
+    print(database_url)
     if not initialized:
         initialize_plot()
     else:
@@ -200,10 +200,7 @@ def update(request):
 
 
 def get_flags(request):
-    if current_project.database_url:
-        database_url = current_project.database_url
-    else:
-        database_url = current_project.database.name
+    database_url = constants.get_database_url()
     with lite.connect(database_url) as con:
         cur = con.cursor()
     cur.execute(
@@ -234,10 +231,7 @@ def highlight_flag(request):
 
 def config2(request, points_id):
     print(points_id)
-    if current_project.database_url:
-        database_url = current_project.database_url
-    else:
-        database_url = current_project.database.name
+    database_url = constants.get_database_url()
     with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
@@ -303,10 +297,7 @@ def config2(request, points_id):
 
 
 def config3(request, points_id1, points_id2):
-    if current_project.database_url:
-        database_url = current_project.database_url
-    else:
-        database_url = current_project.database.name
+    database_url = constants.get_database_url()
     with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
@@ -394,10 +385,7 @@ def config3(request, points_id1, points_id2):
 
 def config(request, points_id):
     print(points_id)
-    if current_project.database_url:
-        database_url = current_project.database_url
-    else:
-        database_url = current_project.database.name
+    database_url = constants.get_database_url()
     with lite.connect(database_url) as con:
         cur = con.cursor()
         cur.execute(
@@ -465,5 +453,5 @@ def config(request, points_id):
         else:
             columns = ['Value']
         response_data = {'data': table_data, 'columns': ['Name'] + columns}
-    return HttpResponseRedirect(json.dumps(response_data), content_type="application/json")
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 

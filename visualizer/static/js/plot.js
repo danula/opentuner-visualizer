@@ -54,7 +54,7 @@ setInterval(function () {
         type: "GET",
         url: '/plot/update/'
     });
-}, 50000);
+}, 10000);
 
 function update_conf_details(obj) {
     console.log('/plot/config/' + obj.join());
@@ -62,6 +62,7 @@ function update_conf_details(obj) {
         type: "GET",
         url: '/plot/config/' + obj.join(),
         success: function (response) {
+            console.log(response);
             if (enable_comparison == false) {
                 update_table_structure(response.columns);
                 console.log(response.data);

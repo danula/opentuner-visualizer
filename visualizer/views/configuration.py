@@ -27,20 +27,19 @@ def unpickle_data(data):
 
 def read_manipulator():
     global manipulator, fields
-    with open(constants.manipulator_url, "r") as f1:
-        manipulator = unpickle_data(f1.read())
-        fields = {}
-        print(manipulator)
-        i = 0
-        for p in manipulator.params:
-            if isinstance(p, NumericParameter):
-                fields[p.name] = forms.IntegerField(p.max_value, p.min_value,
-                                                    widget=forms.NumberInput(attrs={'class': 'form-control'}))
-            elif isinstance(p, EnumParameter):
-                fields[p.name] = forms.ChoiceField(
-                    choices=tuple([(p.options[i], p.options[i]) for i in range(len(p.options))]),
-                    widget=forms.Select(attrs={'class': 'form-control'})
-                )
+    manipulator = constants.get_manipulator()
+    fields = {}
+    print(manipulator)
+    i = 0
+    for p in manipulator.params:
+        if isinstance(p, NumericParameter):
+            fields[p.name] = forms.IntegerField(p.max_value, p.min_value,
+                                                widget=forms.NumberInput(attrs={'class': 'form-control'}))
+        elif isinstance(p, EnumParameter):
+            fields[p.name] = forms.ChoiceField(
+                choices=tuple([(p.options[i], p.options[i]) for i in range(len(p.options))]),
+                widget=forms.Select(attrs={'class': 'form-control'})
+            )
 
 
 def create_form(cfg):
@@ -56,7 +55,7 @@ def index(request, config_id):
         return configuration_edit(request)
     else:
         read_manipulator()
-        engine, session = connect("sqlite:///" + constants.database_url)
+        engine, session = connect("sqlite:///" + constants.get_database_url())
         session = session()
         configuration = session.query(Configuration).filter_by(id=config_id).one()
         data = configuration.data.copy()

@@ -41,8 +41,8 @@
                 <ul class="nav navbar-nav">
                     <li><a href="/analysis/create/">Create New Analysis</a>
                     </li>
-                    {% for analysis in analysis_set.all %}
-                        <li><a href="/analysis/{{ analysis.id }}">{{ analysis.name }}</a>
+                    {% for analysis in project.analysis_set.all %}
+                        <li class="{{ analysis.status }}"><a href="/analysis/{{ analysis.id }}">{{ analysis.name }} ({{ analysis.status }})</a>
                         </li>
                     {% endfor %}
                 </ul>

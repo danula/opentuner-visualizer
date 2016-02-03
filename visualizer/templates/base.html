@@ -20,6 +20,18 @@
     <link rel="stylesheet" type="text/css" href="/static/css/style.css">
     <link rel="stylesheet" type="text/css" href="/static/css/themes/flat-blue.css">
     {#    <link rel="stylesheet" href="{% static 'css/custom-style.css' %}"/>#}
+
+    <style>
+        .incomplete {
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .incomplete a {
+            color: #d98478 !important;
+        }
+    </style>
+
     {% block styles %}
     {% endblock %}
 </head>
@@ -27,18 +39,18 @@
 <body class="flat-blue">
 <div class="app-container">
     <div class="row content-container">
-        <nav class="navbar navbar-default navbar-fixed-top navbar-top">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-expand-toggle">
-                        <i class="fa fa-bars icon"></i>
-                    </button>
-                    <ol class="breadcrumb navbar-breadcrumb">
-                        <li class="active">Visualizer V.1</li>
-                    </ol>
-                </div>
-            </div>
-        </nav>
+{#        <nav class="navbar navbar-default navbar-fixed-top navbar-top">#}
+{#            <div class="container-fluid">#}
+{#                <div class="navbar-header">#}
+{#                    <button type="button" class="navbar-expand-toggle">#}
+{#                        <i class="fa fa-bars icon"></i>#}
+{#                    </button>#}
+{#                    <ol class="breadcrumb navbar-breadcrumb">#}
+{#                        <li class="active">Visualizer V.1</li>#}
+{#                    </ol>#}
+{#                </div>#}
+{#            </div>#}
+{#        </nav>#}
         <div class="side-menu sidebar-inverse">
             <nav class="navbar navbar-default" role="navigation">
                 <div class="side-menu-container">
@@ -71,7 +83,7 @@
         </div>
         <!-- Main Content -->
         <div class="container-fluid">
-            <div class="side-body padding-top">
+            <div class="side-body">
                 {% block content %}
                 {% endblock %}
             </div>
