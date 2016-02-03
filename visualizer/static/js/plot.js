@@ -224,7 +224,7 @@ function update_table2(selected_flags) {
             "<button type='button' class='btn btn-default' onclick=\"offFlag(this,'" +
             selected_flags[index].value + "')\">" + "off</button></div></td>";
         }
-        table_html_body += "<td style='text-align: center; vertical-align: middle;'><i style='cursor:pointer' class='fa fa-close' flagName='" + selected_flags[index].value + "' onclick='removeFlag(this)'></i></td></tr>";
+        table_html_body += "</tr>";
     });
     jQuery("#custom-param-list").html(table_html_start + table_html_body + table_html_end);
 }
