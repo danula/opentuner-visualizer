@@ -15,6 +15,19 @@ conda install bokeh django
 ``` 
 ### Run
 - Start the bokeh-server (`bokeh_server`)
-- Add the database url to `constants.py`
 - Run the django server (`python manage.py runserver`)
 - Go to [http://localhost:8000](http://localhost:8000)
+
+To save the manipulator file, a helper function is given below
+```Python
+def save_manipulator(m):
+  import pickle
+  with open("manipulator", "w") as f:
+    f.write(pickle.dumps(m))
+
+def load_manipulator():
+  import pickle
+  with open("manipulator", "r") as f:
+    return pickle.loads(f.read())
+  return None
+  ```
